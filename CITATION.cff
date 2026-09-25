@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use egypttranslit in research or scholarly work, please cite it using this metadata."
+title: "egypttranslit"
+type: software
+authors:
+  - family-names: "Barrios"
+    given-names: "Eduardo J."
+    email: "edujbarrios@outlook.com"
+    orcid: "https://orcid.org/0009-0004-7805-6386"
+    website: "https://edujbarrios.com"
+version: "0.4.1"
+license: "Apache-2.0"
+repository-code: "https://github.com/edujbarrios/egypttranslit"
+url: "https://github.com/edujbarrios/egypttranslit"
+abstract: "A small Python library for converting Egyptological transliteration to clean, canonical Unicode."
+keywords:
+  - egyptology
+  - transliteration
+  - unicode
+  - manuel de codage
+  - digital humanities

@@ -130,6 +130,21 @@ python -m unittest discover -s tests
 
 CI checks Python 3.9, 3.11 and 3.13.
 
-## License
+## Citation
 
-MIT © 2026 Eduardo J. Barrios.
+If you use `egypttranslit` in research, publications or scholarly software, please cite the project using the repository's `CITATION.cff` metadata.
+
+Author: **Eduardo J. Barrios**  
+ORCID: `0009-0004-7805-6386`  
+GitHub: `https://github.com/edujbarrios`  
+Website: `https://edujbarrios.com`
+
+## License and attribution
+
+`egypttranslit` is licensed under the **Apache License 2.0**.
+
+Copyright © 2026 Eduardo J. Barrios.
+
+Redistributions and derivative works must comply with Apache-2.0, including preservation of applicable copyright and attribution notices. This repository includes a `NOTICE` file identifying Eduardo J. Barrios as the author and maintainer; attribution from that file must be preserved where required by Section 4(d) of the license.
+
+See `LICENSE`, `NOTICE` and `CITATION.cff` for the complete licensing and citation metadata.
