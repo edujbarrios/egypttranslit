@@ -43,7 +43,16 @@ _LEGACY_YOD_SEQUENCES = {
 _MDC_ASCII = frozenset("AaiyjwybpfmnrhHxXzsSqkgtTdD3")
 _UNICODE_TRANSLITERATION = frozenset("ꜣꜥȝʿḥḫẖšṯḏỉḳꞽꞼ")
 _ALLOWED_TOKEN = _MDC_ASCII | _UNICODE_TRANSLITERATION
+
+# Markers strong enough to identify a token as transliteration.
 _STRONG_MARKERS = frozenset("AHxXSTD") | _UNICODE_TRANSLITERATION
+
+# Document-wide inference deliberately excludes canonical ꜣ, ꜥ and ꞽ. Those
+# characters can be produced while converting an otherwise ambiguous token;
+# allowing them to become document-level evidence on the next call would make
+# parsing non-idempotent and could corrupt neighbouring ordinary words.
+_DOCUMENT_MARKERS = frozenset("AHxXSTDȝʿỉḥḫẖšṯḏ")
+
 _TOKEN_RE = re.compile(r"[A-Za-z0-9ꜣꜥȝʿḥḫẖšṯḏỉḳꞽꞼ]+")
 
 
@@ -69,25 +78,26 @@ def _lexical_tokens(text: str) -> list[str]:
 def _document_looks_like_mdc(text: str) -> bool:
     """Conservatively decide whether a complete fragment looks like MdC.
 
-    A whole fragment is treated as MdC only when every lexical token is
-    compatible with MdC *and* there is enough evidence that the fragment is
-    transliteration rather than ordinary Latin-script prose.
+    Every lexical token must be compatible with MdC and the fragment must have
+    explicit transliteration evidence. Multiple ordinary Latin words are not
+    enough on their own, even if their letters happen to belong to the MdC
+    alphabet.
     """
     tokens = _lexical_tokens(text)
     if not tokens or not all(_is_mdc_token(token) for token in tokens):
         return False
 
-    if len(tokens) > 1:
+    if any(character in _DOCUMENT_MARKERS for token in tokens for character in token):
         return True
 
-    token = tokens[0]
-    if any(character in _STRONG_MARKERS for character in token):
-        return True
+    if len(tokens) == 1:
+        token = tokens[0]
+        # Short forms such as ``ra`` occur commonly in MdC. Keeping this
+        # exception narrow avoids treating longer ordinary words such as
+        # ``data`` or ``main`` as transliteration.
+        return len(token) <= 3 and "a" in token
 
-    # Short forms such as ``ra`` occur commonly in MdC. Keeping this exception
-    # narrow avoids turning ordinary single words such as ``data`` or ``main``
-    # into transliteration merely because their letters happen to be valid MdC.
-    return len(token) <= 3 and "a" in token
+    return False
 
 
 def _should_convert_token(token: str, document_is_mdc: bool) -> bool:

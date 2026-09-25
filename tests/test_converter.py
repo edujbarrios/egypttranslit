@@ -1,5 +1,9 @@
+import random
+import unicodedata
 import unittest
+from importlib.metadata import version
 
+import egypttranslit
 from egypttranslit import convert, parse
 
 
@@ -15,6 +19,11 @@ class ConverterTests(unittest.TestCase):
 
     def test_ordinary_single_words_are_not_mistaken_for_mdc(self):
         for source in ("data", "main", "minimum", "train"):
+            with self.subTest(source=source):
+                self.assertEqual(parse(source), source)
+
+    def test_multiple_mdc_compatible_ordinary_words_are_not_mistaken_for_mdc(self):
+        for source in ("main train", "data main", "train data"):
             with self.subTest(source=source):
                 self.assertEqual(parse(source), source)
 
@@ -42,6 +51,9 @@ class ConverterTests(unittest.TestCase):
 
     def test_bare_three_in_prose_is_preserved(self):
         self.assertEqual(parse("Chapter 3 contains data."), "Chapter 3 contains data.")
+
+    def test_three_does_not_turn_neighbouring_plain_words_into_mdc(self):
+        self.assertEqual(parse("n3 data"), "nꜣ data")
 
     def test_ifao_style_unicode_aleph_and_ayin_are_canonicalized(self):
         self.assertEqual(parse("ȝ ʿ"), "ꜣ ꜥ")
@@ -85,12 +97,31 @@ class ConverterTests(unittest.TestCase):
             "The word mAat appears here.",
             "[mAat].nTr-Htp=sn",
             "data",
+            "main train",
+            "n3 data",
             "𓂀 nfr",
         ]
         for source in samples:
             with self.subTest(source=source):
                 once = parse(source)
                 self.assertEqual(parse(once), once)
+
+    def test_deterministic_mixed_input_preserves_parser_invariants(self):
+        alphabet = tuple(
+            "AaiyjwybpfmnrhHxXzsSqkgtTdD3 maintrain"
+            "ꜣꜥȝʿḥḫẖšṯḏỉḳꞽꞼ"
+            "[]-_=.,!? \n\t"
+        ) + ("𓂀", "\u0313", "\u0357", "\u0486")
+        rng = random.Random(20260925)
+
+        for _ in range(2000):
+            source = "".join(rng.choice(alphabet) for _ in range(rng.randint(0, 60)))
+            result = parse(source)
+            self.assertEqual(parse(result), result)
+            self.assertEqual(unicodedata.normalize("NFC", result), result)
+
+    def test_package_version_matches_distribution_metadata(self):
+        self.assertEqual(egypttranslit.__version__, version("egypttranslit"))
 
     def test_convert_alias(self):
         self.assertEqual(convert("Htp"), parse("Htp"))
