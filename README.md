@@ -23,17 +23,6 @@ parse("nTr Htp")
 # 'nṯr ḥtp'
 ```
 
-A longer example:
-
-```python
-from egypttranslit import parse
-
-parse("nTr Htp xpr m mAat")
-# equivalent to: "n\u1E6Fr \u1E25tp \u1E2Bpr m m\uA723\uA725t"
-```
-
-The Unicode escapes above are used for characters that may not render correctly in every font.
-
 `convert()` is available as an alias for `parse()`:
 
 ```python
