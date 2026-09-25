@@ -16,6 +16,8 @@ python -m pip install -e .
 
 ## Usage
 
+For normal use, `parse()` conservatively detects Egyptological transliteration:
+
 ```python
 from egypttranslit import parse
 
@@ -23,16 +25,19 @@ parse("nTr Htp")
 # 'nṯr ḥtp'
 ```
 
-`convert()` is available as an alias for `parse()`:
+`convert()` is an alias for `parse()`.
+
+If you already know that the input is Manuel de Codage, use `parse_mdc()`. This avoids ambiguity with ordinary Latin text:
 
 ```python
-from egypttranslit import convert
+from egypttranslit import parse_mdc
 
-convert("Htp")
-# 'ḥtp'
+parse_mdc("ra nfr")
 ```
 
-The parser also accepts already-Unicode Egyptological text and normalizes older representations where a safe equivalent is known. Unknown characters, punctuation, whitespace and hieroglyphs are preserved.
+For text that is already in Egyptological Unicode, `normalize_unicode()` only repairs verified Unicode equivalents and does not interpret ASCII as MdC.
+
+Unknown characters, punctuation, whitespace and hieroglyphs are preserved. Editorial alternatives such as `j` versus Egyptological yod and `q` versus `ḳ` are not guessed automatically.
 
 ## Citation
 
@@ -45,7 +50,7 @@ For LaTeX/BibTeX:
   author       = {Eduardo J. Barrios},
   title        = {egypttranslit},
   year         = {2026},
-  version      = {0.4.2},
+  version      = {0.5.0},
   howpublished = {\url{https://github.com/edujbarrios/egypttranslit}},
   note         = {ORCID: 0009-0004-7805-6386}
 }
@@ -63,6 +68,7 @@ The conversion rules and Unicode handling in this project were checked against:
 
 - Institut français d’archéologie orientale (IFAO), **Polices de caractères**: https://www.ifao.egnet.net/publications/publier/outils-ed/polices/
 - Institut français d’archéologie orientale (IFAO), **Convertisseurs vers Unicode**: https://www.ifao.egnet.net/publications/publier/outils-ed/convertisseurs/
+- IFAO / Sorbonne Université / BnF, **Papyrus Prisse** transliteration corpus: https://prisse.ifao.egnet.net/verse
 - Egyptologists' Electronic Forum (EEF), **Transliteration**: https://www.egyptologyforum.org/EEFTransl.html
 - Unicode Consortium, **Characters and Combining Marks — Egyptological Yod**: https://www.unicode.org/faq/char_combmark.html#Q_Egyptological_Yod
 

@@ -38,8 +38,10 @@ jobs:
           /tmp/egypttranslit-wheel/bin/python -m pip install --no-deps dist/*.whl
           cd /tmp
           /tmp/egypttranslit-wheel/bin/python - <<'PY'
-          from egypttranslit import __version__, parse
+          from egypttranslit import __version__, normalize_unicode, parse, parse_mdc
 
-          assert __version__ == "0.4.2"
+          assert __version__ == "0.5.0"
           assert parse("nTr Htp") == "nṯr ḥtp"
+          assert parse_mdc("ra nfr") == "r\uA725 nfr"
+          assert normalize_unicode("\u021D \u02BF") == "\uA723 \uA725"
           PY
