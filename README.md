@@ -19,14 +19,16 @@ For local development, clone the repository and install it in editable mode:
 ```bash
 git clone https://github.com/edujbarrios/egyptological-transliteration-converter-python.git
 cd egyptological-transliteration-converter-python
-pip install -e .
+python -m pip install -e .
 ```
 
 A normal local install also works:
 
 ```bash
-pip install .
+python -m pip install .
 ```
+
+The project/distribution name is `egyptological-transliteration-converter`; the Python import is intentionally shorter: `egypttranslit`.
 
 ## Usage
 
