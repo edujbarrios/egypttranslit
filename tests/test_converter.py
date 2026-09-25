@@ -1,20 +1,14 @@
 import unittest
 
-from egyptological_transliteration_converter_python import convert, parse
+from egypttranslit import convert, parse
 
 
 class ConverterTests(unittest.TestCase):
     def test_core_mdc_mapping(self):
-        self.assertEqual(
-            parse("A a H x X S T D"),
-            "ꜣ ꜥ ḥ ḫ ẖ š ṯ ḏ",
-        )
+        self.assertEqual(parse("A a H x X S T D"), "ꜣ ꜥ ḥ ḫ ẖ š ṯ ḏ")
 
     def test_example_phrase(self):
-        self.assertEqual(
-            parse("nTr Htp xpr m mAat"),
-            "nṯr ḥtp ḫpr m mꜣꜥt",
-        )
+        self.assertEqual(parse("nTr Htp xpr m mAat"), "nṯr ḥtp ḫpr m mꜣꜥt")
 
     def test_plain_mdc_word_with_only_lowercase_ayin_is_converted(self):
         self.assertEqual(parse("ra"), "rꜥ")
