@@ -1,24 +1,25 @@
-# Egyptological Transliteration Converter — Python
+# egypttranslit
 
 A small Python library for turning Egyptological transliteration into clean, canonical Unicode.
 
-The public API stays intentionally simple: pass a string to `parse()` and get Unicode back. There is no configuration object and there are no runtime dependencies.
+The API is intentionally tiny:
 
 ```python
-from egyptological_transliteration_converter_python import parse
+from egypttranslit import parse
 
-text = parse("nTr Htp xpr m mAat")
-print(text)
-# nṯr ḥtp ḫpr m mꜣꜥt
+parse("nTr Htp xpr m mAat")
+# 'nṯr ḥtp ḫpr m mꜣꜥt'
 ```
+
+There is no configuration object and there are no runtime dependencies.
 
 ## Install
 
 For local development:
 
 ```bash
-git clone https://github.com/edujbarrios/egyptological-transliteration-converter-python.git
-cd egyptological-transliteration-converter-python
+git clone https://github.com/edujbarrios/egypttranslit.git
+cd egypttranslit
 python -m pip install -e .
 ```
 
@@ -31,24 +32,22 @@ python -m pip install .
 ## Usage
 
 ```python
-from egyptological_transliteration_converter_python import parse
+from egypttranslit import parse
 
 parse("nTr Htp")
 # 'nṯr ḥtp'
 ```
 
-`convert()` is an alias if that reads better in your code:
+`convert()` is an alias:
 
 ```python
-from egyptological_transliteration_converter_python import convert
+from egypttranslit import convert
 
 convert("mAat")
 # 'mꜣꜥt'
 ```
 
-The repository, installed distribution, and importable Python package use the same name, with hyphens replaced by underscores where Python syntax requires it.
-
-## What the parser understands
+## What it understands
 
 ### Manuel de Codage shortcuts
 
@@ -67,7 +66,7 @@ The repository, installed distribution, and importable Python package use the sa
 
 ### Historical Unicode variants
 
-The parser also repairs several representations found in older or mixed Egyptological data:
+Older or mixed Egyptological data is canonicalized where the equivalence is clear:
 
 | Input | Canonical output |
 | --- | --- |
@@ -78,15 +77,13 @@ The parser also repairs several representations found in older or mixed Egyptolo
 | `i` + U+0357 | `ꞽ` |
 | `i` + U+0486 | `ꞽ` |
 
-Unicode 12.0 introduced the dedicated Egyptological yod `ꞽ` (U+A7BD). The Unicode Consortium documents it as the preferred character and notes that the three older combining sequences are not automatically normalized to it.
+Unicode 12.0 introduced the dedicated Egyptological yod `ꞽ` (U+A7BD). The Unicode Consortium documents it as the preferred character and notes that the older combining sequences are not automatically normalized to it.
 
 Reference: https://www.unicode.org/faq/char_combmark.html#Q_Egyptological_Yod
 
-The returned string is normalized to Unicode NFC after Egyptological canonicalization.
-
 ## Conservative parsing
 
-The parser tries to convert transliteration without damaging surrounding prose.
+`egypttranslit` tries to convert transliteration without damaging surrounding prose.
 
 ```python
 parse("The word mAat is often discussed in Egyptology.")
@@ -94,29 +91,17 @@ parse("The word mAat is often discussed in Egyptology.")
 
 parse("Example data stays exactly as written.")
 # 'Example data stays exactly as written.'
-
-parse("data")
-# 'data'
 ```
 
-Editorial punctuation is preserved:
+Editorial punctuation, whitespace, line breaks, unknown characters, hieroglyphs and catalogue numbers are preserved. The result is normalized to Unicode NFC, and parsing is idempotent: parsing an already converted result does not change it again.
 
-```python
-parse("[mAat].nTr-Htp=sn <xpr>")
-# '[mꜣꜥt].nṯr-ḥtp=sn <ḫpr>'
-```
-
-Whitespace, line breaks, unknown characters, hieroglyphs, catalogue numbers, and unsupported notation are kept unchanged. Parsing is idempotent: parsing an already converted result does not change it again.
-
-The package deliberately uses the dedicated Unicode Egyptological letters `ꜣ`, `ꜥ`, and `ꞽ` when repairing equivalent historical encodings. It does not silently change editorial choices such as `j` versus `ꞽ` or `q` versus `ḳ` when both are already valid transliteration conventions.
+The package does not silently change editorial choices such as `j` versus `ꞽ` or `q` versus `ḳ` when both are valid transliteration conventions.
 
 ## Legacy fonts
 
-Historical fonts such as IFAOtimes, METimes, TranslitAncien, EgyptoRom-Ita, and Transliteration are a different problem from MdC text: a Python `str` does not carry the font that originally gave its code points meaning. The IFAO converter therefore asks the user to choose the original font before conversion.
+Historical fonts such as IFAOtimes, METimes, TranslitAncien, EgyptoRom-Ita and Transliteration require verified font-specific mappings. Those profiles will only be added when their mappings can be documented and tested; the library does not guess legacy-font equivalences from visual similarity.
 
-This package will only add those legacy profiles when their mappings can be independently verified and covered by tests. It will not guess legacy-font equivalences from visual similarity.
-
-Reference material used to define current behavior:
+References:
 
 - IFAO, “Polices de caractères”: https://www.ifao.egnet.net/publications/publier/outils-ed/polices/
 - IFAO, “Convertisseurs vers Unicode”: https://www.ifao.egnet.net/publications/publier/outils-ed/convertisseurs/
@@ -124,13 +109,11 @@ Reference material used to define current behavior:
 
 ## Tests
 
-The test suite uses only Python's standard library:
-
 ```bash
 python -m unittest discover -s tests
 ```
 
-CI checks Python 3.9, 3.11, and 3.13.
+CI checks Python 3.9, 3.11 and 3.13.
 
 ## License
 
