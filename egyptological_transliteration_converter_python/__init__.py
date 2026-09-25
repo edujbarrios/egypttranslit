@@ -3,4 +3,4 @@
 from .converter import convert, parse
 
 __all__ = ["parse", "convert"]
-__version__ = "0.2.0"
+__version__ = "0.3.0"

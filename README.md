@@ -1,6 +1,6 @@
 # Egyptological Transliteration Converter — Python
 
-A small Python library for turning Egyptological transliteration into clean Unicode.
+A small Python library for turning Egyptological transliteration into clean, canonical Unicode.
 
 The public API stays intentionally simple: pass a string to `parse()` and get Unicode back. There is no configuration object and there are no runtime dependencies.
 
@@ -50,7 +50,7 @@ The repository, installed distribution, and importable Python package use the sa
 
 ## What the parser understands
 
-The parser converts the core Manuel de Codage shortcuts:
+### Manuel de Codage shortcuts
 
 | MdC | Unicode |
 | --- | --- |
@@ -63,16 +63,30 @@ The parser converts the core Manuel de Codage shortcuts:
 | `T` | `ṯ` |
 | `D` | `ḏ` |
 
-It also understands two common textual variants:
+`3` is also understood as an aleph when it appears inside an MdC token.
 
-- `3` as an aleph inside MdC transliteration, converted to `ꜣ`.
-- IFAO-style Unicode `ȝ` and `ʿ`, canonicalized to `ꜣ` and `ꜥ`.
+### Historical Unicode variants
 
-The returned string is normalized to Unicode NFC.
+The parser also repairs several representations found in older or mixed Egyptological data:
+
+| Input | Canonical output |
+| --- | --- |
+| `ȝ` | `ꜣ` |
+| `ʿ` | `ꜥ` |
+| `ỉ` | `ꞽ` |
+| `i` + U+0313 | `ꞽ` |
+| `i` + U+0357 | `ꞽ` |
+| `i` + U+0486 | `ꞽ` |
+
+Unicode 12.0 introduced the dedicated Egyptological yod `ꞽ` (U+A7BD). The Unicode Consortium documents it as the preferred character and notes that the three older combining sequences are not automatically normalized to it.
+
+Reference: https://www.unicode.org/faq/char_combmark.html#Q_Egyptological_Yod
+
+The returned string is normalized to Unicode NFC after Egyptological canonicalization.
 
 ## Conservative parsing
 
-The parser is designed not to damage surrounding prose. It recognizes whether a token looks like Egyptological transliteration before applying the MdC substitutions.
+The parser tries to convert transliteration without damaging surrounding prose.
 
 ```python
 parse("The word mAat is often discussed in Egyptology.")
@@ -80,6 +94,9 @@ parse("The word mAat is often discussed in Egyptology.")
 
 parse("Example data stays exactly as written.")
 # 'Example data stays exactly as written.'
+
+parse("data")
+# 'data'
 ```
 
 Editorial punctuation is preserved:
@@ -89,9 +106,9 @@ parse("[mAat].nTr-Htp=sn <xpr>")
 # '[mꜣꜥt].nṯr-ḥtp=sn <ḫpr>'
 ```
 
-Whitespace, line breaks, unknown characters, hieroglyphs, catalogue numbers, and unsupported notation are kept unchanged. Decomposed Unicode sequences are normalized safely.
+Whitespace, line breaks, unknown characters, hieroglyphs, catalogue numbers, and unsupported notation are kept unchanged. Parsing is idempotent: parsing an already converted result does not change it again.
 
-The package deliberately uses the dedicated Unicode Egyptological letters `ꜣ` and `ꜥ` rather than exposing multiple output conventions.
+The package deliberately uses the dedicated Unicode Egyptological letters `ꜣ`, `ꜥ`, and `ꞽ` when repairing equivalent historical encodings. It does not silently change editorial choices such as `j` versus `ꞽ` or `q` versus `ḳ` when both are already valid transliteration conventions.
 
 ## Legacy fonts
 
@@ -103,7 +120,7 @@ Reference material used to define current behavior:
 
 - IFAO, “Polices de caractères”: https://www.ifao.egnet.net/publications/publier/outils-ed/polices/
 - IFAO, “Convertisseurs vers Unicode”: https://www.ifao.egnet.net/publications/publier/outils-ed/convertisseurs/
-- Egyptologists' Electronic Forum transliteration table: https://egyptologyforum.org/EEFTransl.html
+- Unicode Consortium, “Egyptological Yod”: https://www.unicode.org/faq/char_combmark.html#Q_Egyptological_Yod
 
 ## Tests
 

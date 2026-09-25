@@ -19,6 +19,11 @@ class ConverterTests(unittest.TestCase):
     def test_plain_mdc_word_with_only_lowercase_ayin_is_converted(self):
         self.assertEqual(parse("ra"), "rꜥ")
 
+    def test_ordinary_single_words_are_not_mistaken_for_mdc(self):
+        for source in ("data", "main", "minimum", "train"):
+            with self.subTest(source=source):
+                self.assertEqual(parse(source), source)
+
     def test_mixed_prose_only_converts_signalled_transliteration(self):
         self.assertEqual(
             parse("The word mAat is often discussed in Egyptology."),
@@ -47,11 +52,24 @@ class ConverterTests(unittest.TestCase):
     def test_ifao_style_unicode_aleph_and_ayin_are_canonicalized(self):
         self.assertEqual(parse("ȝ ʿ"), "ꜣ ꜥ")
 
+    def test_ifao_yod_variant_is_canonicalized(self):
+        self.assertEqual(parse("ỉ"), "ꞽ")
+
+    def test_legacy_unicode_yod_sequences_are_canonicalized(self):
+        for source in ("i\u0313", "i\u0357", "i\u0486"):
+            with self.subTest(source=source):
+                self.assertEqual(parse(source), "ꞽ")
+
+    def test_legacy_uppercase_yod_sequences_preserve_case(self):
+        for source in ("I\u0313", "I\u0357", "I\u0486"):
+            with self.subTest(source=source):
+                self.assertEqual(parse(source), "Ꞽ")
+
     def test_decomposed_unicode_is_normalized(self):
         self.assertEqual(parse("h\u0323"), "ḥ")
 
     def test_existing_unicode_is_preserved(self):
-        source = "ꜣ ꜥ ḥ ḫ ẖ š ṯ ḏ"
+        source = "ꜣ ꜥ ꞽ ḥ ḫ ẖ š ṯ ḏ ḳ"
         self.assertEqual(parse(source), source)
 
     def test_unknown_characters_are_preserved(self):
@@ -64,6 +82,21 @@ class ConverterTests(unittest.TestCase):
     def test_whitespace_and_multiline_text_are_preserved(self):
         source = "nTr\tHtp\n\n  mAat"
         self.assertEqual(parse(source), "nṯr\tḥtp\n\n  mꜣꜥt")
+
+    def test_parse_is_idempotent(self):
+        samples = [
+            "nTr Htp xpr m mAat",
+            "ȝ ʿ ỉ",
+            "i\u0357 Htp",
+            "The word mAat appears here.",
+            "[mAat].nTr-Htp=sn",
+            "data",
+            "𓂀 nfr",
+        ]
+        for source in samples:
+            with self.subTest(source=source):
+                once = parse(source)
+                self.assertEqual(parse(once), once)
 
     def test_convert_alias(self):
         self.assertEqual(convert("Htp"), parse("Htp"))
