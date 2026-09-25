@@ -1,6 +1,6 @@
 import unittest
 
-from egypttranslit import convert, parse
+from egyptological_transliteration_converter_python import convert, parse
 
 
 class ConverterTests(unittest.TestCase):

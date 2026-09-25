@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "egyptological-transliteration-converter"
+name = "egyptological-transliteration-converter-python"
 version = "0.1.0"
 description = "A small Python library for converting Egyptological transliteration to Unicode."
 authors = [{ name = "Eduardo J. Barrios" }]
@@ -22,4 +22,4 @@ classifiers = [
 Repository = "https://github.com/edujbarrios/egyptological-transliteration-converter-python"
 
 [tool.setuptools]
-packages = ["egypttranslit"]
+packages = ["egyptological_transliteration_converter_python"]

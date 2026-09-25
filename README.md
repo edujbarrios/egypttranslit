@@ -5,7 +5,7 @@ A small Python library for converting common Manuel de Codage (MdC) Egyptologica
 The library is intentionally simple: give it a string and get Unicode back. There is no format selector, no configuration object, and no runtime dependency.
 
 ```python
-from egypttranslit import parse
+from egyptological_transliteration_converter_python import parse
 
 text = parse("nTr Htp xpr m mAat")
 print(text)
@@ -28,14 +28,12 @@ A normal local install also works:
 python -m pip install .
 ```
 
-The project/distribution name is `egyptological-transliteration-converter`; the Python import is intentionally shorter: `egypttranslit`.
-
 ## Usage
 
 Use `parse()` for the shortest API:
 
 ```python
-from egypttranslit import parse
+from egyptological_transliteration_converter_python import parse
 
 parse("nTr Htp")
 # 'nṯr ḥtp'
@@ -44,11 +42,13 @@ parse("nTr Htp")
 `convert()` is an alias if that reads better in your code:
 
 ```python
-from egypttranslit import convert
+from egyptological_transliteration_converter_python import convert
 
 convert("mAat")
 # 'mꜣꜥt'
 ```
+
+The repository, installed distribution, and importable Python package intentionally use the same name, with hyphens replaced by underscores where Python syntax requires it.
 
 ## Current conversions
 
