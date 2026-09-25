@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "egyptological-transliteration-converter"
+version = "0.1.0"
+description = "A small Python library for converting Egyptological transliteration to Unicode."
+authors = [{ name = "Eduardo J. Barrios" }]
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = []
+keywords = ["egyptology", "transliteration", "unicode", "manuel-de-codage", "mdc"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Repository = "https://github.com/edujbarrios/egyptological-transliteration-converter-python"
+
+[tool.setuptools]
+packages = ["egypttranslit"]
