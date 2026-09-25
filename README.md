@@ -45,7 +45,7 @@ For LaTeX/BibTeX:
   author       = {Eduardo J. Barrios},
   title        = {egypttranslit},
   year         = {2026},
-  version      = {0.4.1},
+  version      = {0.4.2},
   howpublished = {\url{https://github.com/edujbarrios/egypttranslit}},
   note         = {ORCID: 0009-0004-7805-6386}
 }

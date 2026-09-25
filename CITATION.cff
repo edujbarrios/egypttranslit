@@ -8,7 +8,7 @@ authors:
     email: "edujbarrios@outlook.com"
     orcid: "https://orcid.org/0009-0004-7805-6386"
     website: "https://edujbarrios.com"
-version: "0.4.1"
+version: "0.4.2"
 license: "Apache-2.0"
 repository-code: "https://github.com/edujbarrios/egypttranslit"
 url: "https://github.com/edujbarrios/egypttranslit"
