@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "egyptological-transliteration-converter-python"
-version = "0.1.0"
+version = "0.2.0"
 description = "A small Python library for converting Egyptological transliteration to Unicode."
 authors = [{ name = "Eduardo J. Barrios" }]
 readme = "README.md"
