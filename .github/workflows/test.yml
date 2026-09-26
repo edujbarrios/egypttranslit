@@ -28,20 +28,22 @@ jobs:
         run: python -m pip check
       - name: Build wheel
         run: python -m pip wheel . --no-deps --wheel-dir dist
-      - name: Verify license and attribution files in wheel
+      - name: Verify metadata files in wheel
         run: |
           WHEEL="$(ls dist/*.whl)"
-          python -m zipfile -l "$WHEEL" | grep -E 'LICENSE|NOTICE'
+          python -m zipfile -l "$WHEEL" | grep -E 'LICENSE|NOTICE|egypttranslit/py\.typed'
       - name: Verify isolated wheel installation
         run: |
           python -m venv /tmp/egypttranslit-wheel
           /tmp/egypttranslit-wheel/bin/python -m pip install --no-deps dist/*.whl
           cd /tmp
           /tmp/egypttranslit-wheel/bin/python - <<'PY'
+          from importlib.resources import files
           from egypttranslit import __version__, normalize_unicode, parse, parse_mdc
 
           assert __version__ == "0.5.0"
           assert parse("nTr Htp") == "nṯr ḥtp"
           assert parse_mdc("ra nfr") == "r\uA725 nfr"
           assert normalize_unicode("\u021D \u02BF") == "\uA723 \uA725"
+          assert files("egypttranslit").joinpath("py.typed").is_file()
           PY
