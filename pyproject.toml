@@ -25,3 +25,6 @@ Citation = "https://github.com/edujbarrios/egypttranslit/blob/main/CITATION.cff"
 
 [tool.setuptools]
 packages = ["egypttranslit"]
+
+[tool.setuptools.package-data]
+egypttranslit = ["py.typed"]
