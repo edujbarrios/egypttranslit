@@ -14,53 +14,52 @@ cd egypttranslit
 python -m pip install -e .
 ```
 
-## Usage
+## Quick guide
 
-For normal use, `parse()` conservatively detects Egyptological transliteration:
+| Function | Use it when | Example |
+| --- | --- | --- |
+| `parse(text)` | You want conservative automatic parsing. | `parse("nTr Htp")` |
+| `parse_mdc(text)` | You know the input is Manuel de Codage. | `parse_mdc("ra nfr")` |
+| `normalize_unicode(text)` | The text is already Egyptological Unicode and only needs safe normalization. | `normalize_unicode("ȝ ʿ ỉ")` |
+| `convert(text)` | You prefer a descriptive alias for `parse()`. | `convert("Htp")` |
+
+Normal use:
 
 ```python
 from egypttranslit import parse
 
-parse("nTr Htp")
-# 'nṯr ḥtp'
+result = parse("nTr Htp")
 ```
 
-`convert()` is an alias for `parse()`.
-
-If you already know that the input is Manuel de Codage, use `parse_mdc()`. This avoids ambiguity with ordinary Latin text:
+If the input is definitely MdC, prefer the explicit mode:
 
 ```python
 from egypttranslit import parse_mdc
 
-parse_mdc("ra nfr")
+result = parse_mdc("ra nfr")
 ```
 
-For text that is already in Egyptological Unicode, `normalize_unicode()` only repairs verified Unicode equivalents and does not interpret ASCII as MdC.
+For already-Unicode scholarly text:
+
+```python
+from egypttranslit import normalize_unicode
+
+result = normalize_unicode(text)
+```
 
 Unknown characters, punctuation, whitespace and hieroglyphs are preserved. Editorial alternatives such as `j` versus Egyptological yod and `q` versus `ḳ` are not guessed automatically.
 
 ## Citation
 
-If you use `egypttranslit` in research or scholarly software, please cite it. The repository also contains a `CITATION.cff` file.
+`CITATION.cff` is the single source of citation metadata for this project.
 
-For LaTeX/BibTeX:
-
-```bibtex
-@misc{barrios2026egypttranslit,
-  author       = {Eduardo J. Barrios},
-  title        = {egypttranslit},
-  year         = {2026},
-  version      = {0.5.0},
-  howpublished = {\url{https://github.com/edujbarrios/egypttranslit}},
-  note         = {ORCID: 0009-0004-7805-6386}
-}
-```
-
-Then cite it with:
+On GitHub, choose **Cite this repository → BibTeX**, copy the generated entry into your `.bib` file, and cite the key from that entry in LaTeX:
 
 ```latex
-\cite{barrios2026egypttranslit}
+\cite{<bibtex-key>}
 ```
+
+Keeping the bibliographic metadata only in `CITATION.cff` avoids duplicated author, ORCID and version information in the README.
 
 ## References
 
