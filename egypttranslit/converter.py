@@ -21,12 +21,15 @@ _MDC_TRANSLATION = str.maketrans(
 )
 
 # Historical Unicode representations that can be canonicalized without
-# guessing an editorial convention.
+# guessing an editorial convention. Case is preserved where Unicode provides
+# a case pair.
 _UNICODE_CANONICAL_TRANSLATION = str.maketrans(
     {
         "ȝ": "ꜣ",
+        "Ȝ": "Ꜣ",
         "ʿ": "ꜥ",
         "ỉ": "ꞽ",
+        "Ỉ": "Ꞽ",
     }
 )
 
@@ -41,22 +44,33 @@ _LEGACY_YOD_SEQUENCES = {
     "I\u0486": "Ꞽ",
 }
 
+# U+1E96 LATIN SMALL LETTER H WITH LINE BELOW has no single-code-point
+# uppercase mapping. Unicode uppercases it to H + COMBINING MACRON BELOW.
+# Keep that sequence atomic so the ASCII H is never mistaken for the MdC H
+# shortcut when the caller supplies valid uppercase scholarly Unicode.
+_UPPERCASE_XH = "H\u0331"
+
 # Plain j and q are accepted but intentionally not rewritten. IFAO documents
 # j/ỉ and q/ḳ as legitimate editorial alternatives, not encoding errors.
 _MDC_ASCII = frozenset("AaiyjwybpfmnrhHxXzsSqkgtTdD3")
-_UNICODE_TRANSLITERATION = frozenset("ꜣꜥȝʿḥḫẖšṯḏỉḳꞽꞼ")
+_UNICODE_TRANSLITERATION = frozenset(
+    "ꜢꜣꜤꜥȜȝʿḤḥḪḫẖŠšṮṯḎḏỈỉḲḳꞼꞽ"
+)
 _ALLOWED_TOKEN = _MDC_ASCII | _UNICODE_TRANSLITERATION
 
 # Markers strong enough to identify an individual token as transliteration.
 _STRONG_MARKERS = frozenset("AHxXSTD") | _UNICODE_TRANSLITERATION
 
-# Document-wide inference deliberately excludes canonical ꜣ, ꜥ and ꞽ. Those
-# characters can be produced while converting an otherwise ambiguous token;
-# allowing them to become document-level evidence on the next call would make
-# parsing non-idempotent and could corrupt neighbouring ordinary words.
-_DOCUMENT_MARKERS = frozenset("AHxXSTDȝʿỉḥḫẖšṯḏ")
+# Document-wide inference deliberately excludes canonical Ꜣ/ꜣ, Ꜥ/ꜥ and
+# Ꞽ/ꞽ. Those characters can be produced while converting otherwise ambiguous
+# tokens; allowing them to become document-level evidence on the next call
+# would make parsing non-idempotent and could corrupt neighbouring prose.
+_DOCUMENT_MARKERS = frozenset("AHxXSTDȜȝʿỈỉḤḥḪḫŠšṮṯḎḏḲḳ")
 
-_TOKEN_RE = re.compile(r"[A-Za-z0-9ꜣꜥȝʿḥḫẖšṯḏỉḳꞽꞼ]+")
+_TOKEN_RE = re.compile(
+    re.escape(_UPPERCASE_XH)
+    + r"|[A-Za-z0-9ꜢꜣꜤꜥȜȝʿḤḥḪḫẖŠšṮṯḎḏỈỉḲḳꞼꞽ]+"
+)
 
 
 def _require_text(text: str) -> None:
@@ -83,6 +97,8 @@ def normalize_unicode(text: str) -> str:
 
 
 def _is_mdc_token(token: str) -> bool:
+    if token == _UPPERCASE_XH:
+        return True
     return bool(token) and all(character in _ALLOWED_TOKEN for character in token)
 
 
@@ -101,7 +117,11 @@ def _document_looks_like_mdc(text: str) -> bool:
     if not tokens or not all(_is_mdc_token(token) for token in tokens):
         return False
 
-    if any(character in _DOCUMENT_MARKERS for token in tokens for character in token):
+    if any(
+        token == _UPPERCASE_XH
+        or any(character in _DOCUMENT_MARKERS for character in token)
+        for token in tokens
+    ):
         return True
 
     if len(tokens) == 1:
@@ -112,6 +132,8 @@ def _document_looks_like_mdc(text: str) -> bool:
 
 
 def _should_convert_token(token: str, document_is_mdc: bool) -> bool:
+    if token == _UPPERCASE_XH:
+        return False
     if not _is_mdc_token(token):
         return False
     if document_is_mdc:
@@ -122,6 +144,8 @@ def _should_convert_token(token: str, document_is_mdc: bool) -> bool:
 
 
 def _canonicalize_token(token: str) -> str:
+    if token == _UPPERCASE_XH:
+        return token
     return token.translate(_UNICODE_CANONICAL_TRANSLATION).translate(_MDC_TRANSLATION)
 
 
