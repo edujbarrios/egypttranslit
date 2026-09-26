@@ -112,23 +112,21 @@ def _lexical_tokens(text: str) -> list[str]:
 
 
 def _document_looks_like_mdc(text: str) -> bool:
-    """Conservatively decide whether a complete fragment looks like MdC."""
+    """Return true only when a complete fragment has explicit MdC evidence.
+
+    Plain lowercase ASCII is deliberately insufficient evidence. Ambiguous
+    input is preserved by :func:`parse`; callers who know the source is MdC
+    should use :func:`parse_mdc` instead of relying on a guess.
+    """
     tokens = _lexical_tokens(text)
     if not tokens or not all(_is_mdc_token(token) for token in tokens):
         return False
 
-    if any(
+    return any(
         token == _UPPERCASE_XH
         or any(character in _DOCUMENT_MARKERS for character in token)
         for token in tokens
-    ):
-        return True
-
-    if len(tokens) == 1:
-        token = tokens[0]
-        return len(token) <= 3 and "a" in token
-
-    return False
+    )
 
 
 def _should_convert_token(token: str, document_is_mdc: bool) -> bool:

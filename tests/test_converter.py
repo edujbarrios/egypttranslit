@@ -4,7 +4,7 @@ import unittest
 from importlib.metadata import version
 
 import egypttranslit
-from egypttranslit import convert, parse
+from egypttranslit import convert, parse, parse_mdc
 
 
 class ConverterTests(unittest.TestCase):
@@ -14,8 +14,9 @@ class ConverterTests(unittest.TestCase):
     def test_example_phrase(self):
         self.assertEqual(parse("nTr Htp xpr m mAat"), "nṯr ḥtp ḫpr m mꜣꜥt")
 
-    def test_plain_mdc_word_with_only_lowercase_ayin_is_converted(self):
-        self.assertEqual(parse("ra"), "rꜥ")
+    def test_ambiguous_lowercase_mdc_is_preserved_by_auto_parse(self):
+        self.assertEqual(parse("ra"), "ra")
+        self.assertEqual(parse_mdc("ra"), "rꜥ")
 
     def test_ordinary_single_words_are_not_mistaken_for_mdc(self):
         for source in ("data", "main", "minimum", "train"):
@@ -96,6 +97,7 @@ class ConverterTests(unittest.TestCase):
             "i\u0357 Htp",
             "The word mAat appears here.",
             "[mAat].nTr-Htp=sn",
+            "ra",
             "data",
             "main train",
             "n3 data",
