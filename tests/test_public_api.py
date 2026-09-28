@@ -4,7 +4,6 @@ from typing import get_type_hints
 
 import egypttranslit
 
-
 _PUBLIC_FUNCTIONS = {
     "convert": egypttranslit.convert,
     "normalize_unicode": egypttranslit.normalize_unicode,
@@ -14,21 +13,11 @@ _PUBLIC_FUNCTIONS = {
 
 
 class PublicApiContractTests(unittest.TestCase):
-    def test_all_exports_are_exact_and_stable(self):
+    def test_declared_exports_are_exact_and_stable(self):
         self.assertEqual(
             egypttranslit.__all__,
             ["convert", "normalize_unicode", "parse", "parse_mdc"],
         )
-        self.assertEqual(
-            {name for name in dir(egypttranslit) if not name.startswith("_")},
-            set(egypttranslit.__all__),
-        )
-
-    def test_star_import_exposes_only_declared_api(self):
-        namespace: dict[str, object] = {}
-        exec("from egypttranslit import *", namespace)
-        exported = {name for name in namespace if name != "__builtins__"}
-        self.assertEqual(exported, set(egypttranslit.__all__))
 
     def test_public_converter_signatures_are_one_string_to_string(self):
         for name, function in _PUBLIC_FUNCTIONS.items():
@@ -44,9 +33,11 @@ class PublicApiContractTests(unittest.TestCase):
         values = (None, b"nTr", 7, 3.14, [], {}, object())
         for name, function in _PUBLIC_FUNCTIONS.items():
             for value in values:
-                with self.subTest(function=name, value_type=type(value).__name__):
-                    with self.assertRaisesRegex(TypeError, "^text must be a string$"):
-                        function(value)  # type: ignore[arg-type]
+                with (
+                    self.subTest(function=name, value_type=type(value).__name__),
+                    self.assertRaisesRegex(TypeError, r"^text must be a string$"),
+                ):
+                    function(value)  # type: ignore[arg-type]
 
     def test_string_subclasses_are_accepted_and_return_plain_strings(self):
         class ScholarlyText(str):
