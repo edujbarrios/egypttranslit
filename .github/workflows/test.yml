@@ -84,6 +84,18 @@ jobs:
         run: python -m build
       - name: Validate PyPI metadata
         run: python -m twine check dist/*
+      - name: Verify reproducible wheel build
+        env:
+          SOURCE_DATE_EPOCH: "1700000000"
+        run: |
+          rm -rf /tmp/egypttranslit-wheel-a /tmp/egypttranslit-wheel-b
+          python -m build --wheel --outdir /tmp/egypttranslit-wheel-a
+          python -m build --wheel --outdir /tmp/egypttranslit-wheel-b
+          WHEEL_A="$(find /tmp/egypttranslit-wheel-a -maxdepth 1 -name '*.whl' -print -quit)"
+          WHEEL_B="$(find /tmp/egypttranslit-wheel-b -maxdepth 1 -name '*.whl' -print -quit)"
+          test -n "$WHEEL_A" && test -n "$WHEEL_B"
+          cmp "$WHEEL_A" "$WHEEL_B"
+          sha256sum "$WHEEL_A" "$WHEEL_B"
       - name: Audit artifact contents
         run: python scripts/check_artifacts.py
       - name: Verify isolated wheel installation

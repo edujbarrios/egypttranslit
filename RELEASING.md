@@ -6,11 +6,14 @@ This checklist prepares a release without publishing anything automatically.
 
 GitHub Actions must pass:
 
-- Python 3.10, 3.11, 3.12, 3.13 and 3.14 tests;
+- Python 3.10, 3.11, 3.12, 3.13 and 3.14 tests on Linux;
+- the full suite on current GitHub-hosted Windows and macOS runners;
 - compile, lint, formatting and strict type checks;
 - release metadata synchronization;
 - wheel and source-distribution builds;
 - `twine check`;
+- the wheel reproducibility check with a fixed `SOURCE_DATE_EPOCH`;
+- the artifact-content audit;
 - isolated installation from both wheel and sdist.
 
 The Python 3.15 pre-release job is informative and is allowed to fail until 3.15 becomes a supported release.
@@ -37,15 +40,17 @@ python -m unittest discover -s tests
 ```bash
 rm -rf build dist *.egg-info
 python -m pip install --upgrade build twine
+export SOURCE_DATE_EPOCH="$(git log -1 --pretty=%ct)"
 python -m build
 python -m twine check dist/*
+python scripts/check_artifacts.py
 ```
 
-Both a wheel and a source distribution must be produced.
+Both a wheel and a source distribution must be produced. `SOURCE_DATE_EPOCH` gives the wheel a deterministic timestamp input; CI independently builds the wheel twice with the same epoch and requires byte-for-byte equality. This repository does not claim that the setuptools sdist is bit-for-bit reproducible.
 
 ## 4. Inspect the artifacts
 
-Confirm that the wheel contains the package, `py.typed`, `LICENSE` and `NOTICE`, and that the source distribution also contains `README.md`, `CITATION.cff` and the tests.
+Confirm that the wheel contains only the runtime package and distribution metadata, including `py.typed`, `LICENSE` and `NOTICE`. The source distribution must also contain the README, citation metadata, release documentation, tests and release-audit scripts. Neither artifact may contain caches, bytecode, repository metadata, environment files, private-key-like files or unsafe archive paths.
 
 CI performs these checks automatically, but they should still be reviewed before the first public release.
 
@@ -62,3 +67,4 @@ Official references:
 - PyPI Trusted Publishing: https://docs.pypi.org/trusted-publishers/
 - PyPI GitHub Actions publisher: https://docs.pypi.org/trusted-publishers/using-a-publisher/
 - Python Packaging User Guide: https://packaging.python.org/en/latest/flow/
+- Reproducible Builds, `SOURCE_DATE_EPOCH`: https://reproducible-builds.org/docs/source-date-epoch/
