@@ -11,7 +11,6 @@ import unittest
 
 from egypttranslit import normalize_unicode, parse, parse_mdc
 
-
 _EGYPTIAN_RANGES = (
     range(0x13000, 0x13430),
     range(0x13430, 0x13460),
@@ -25,7 +24,9 @@ class HieroglyphUnicodeTests(unittest.TestCase):
             for code_point in code_points:
                 source = chr(code_point)
                 for converter in (normalize_unicode, parse, parse_mdc):
-                    with self.subTest(code_point=f"U+{code_point:05X}", mode=converter.__name__):
+                    with self.subTest(
+                        code_point=f"U+{code_point:05X}", mode=converter.__name__
+                    ):
                         self.assertEqual(converter(source), source)
 
     def test_format_control_sequences_survive_next_to_transliteration(self):
@@ -46,7 +47,9 @@ class HieroglyphUnicodeTests(unittest.TestCase):
         self.assertEqual(normalize_unicode(source), source)
 
     def test_lost_sign_variation_sequences_are_preserved(self):
-        source = "".join(chr(code_point) + "\uFE00" for code_point in range(0x13443, 0x13447))
+        source = "".join(
+            chr(code_point) + "\uFE00" for code_point in range(0x13443, 0x13447)
+        )
 
         for converter in (normalize_unicode, parse, parse_mdc):
             with self.subTest(mode=converter.__name__):
