@@ -39,7 +39,7 @@ jobs:
       - name: Compile Python sources
         run: python -m compileall -q egypttranslit tests scripts
       - name: Lint
-        run: python -m ruff check --diff egypttranslit tests scripts
+        run: python -m ruff check egypttranslit tests scripts
       - name: Check formatting
         run: python -m ruff format --check egypttranslit tests scripts
       - name: Type check public package
