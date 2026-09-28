@@ -4,7 +4,6 @@ import importlib.metadata
 import re
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = "egypttranslit"
 REPOSITORY = "https://github.com/edujbarrios/egypttranslit"
