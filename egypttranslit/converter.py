@@ -71,9 +71,10 @@ _SIGN_CODE_RE = re.compile(
 # ASCII evidence. Lowercase ``a`` and ``x`` are too common in ordinary Latin
 # text, while a leading MdC capital can also be an ordinary title-case word.
 # Exactly one embedded ``3`` or internal MdC uppercase shortcut is enough to
-# convert a token such as ``n3``, ``nTr`` or ``mAat``. Multiple strong markers
-# are treated as ambiguous and preserved; callers who know the source is MdC
-# should use :func:`parse_mdc` and avoid detection entirely.
+# convert a token such as ``n3``, ``nTr`` or ``mAat``. Leading strong markers
+# are counted when deciding ambiguity but never suffice by themselves. Thus
+# acronym-like or multiply marked tokens are preserved. Callers who know the
+# source is MdC should use :func:`parse_mdc` and avoid detection entirely.
 _AUTO_MDC_MARKERS = frozenset("AHXSTD")
 
 _TOKEN_RE = re.compile(
@@ -117,11 +118,13 @@ def _is_mdc_token(token: str) -> bool:
     return bool(token) and all(character in _ALLOWED_TOKEN for character in token)
 
 
+def _is_auto_marker(character: str) -> bool:
+    return character == "3" or character in _AUTO_MDC_MARKERS
+
+
 def _auto_mdc_signal_count(token: str) -> int:
     """Count distinctive ASCII signals used by conservative auto parsing."""
-    return token.count("3") + sum(
-        character in _AUTO_MDC_MARKERS for character in token[1:]
-    )
+    return sum(_is_auto_marker(character) for character in token)
 
 
 def _has_explicit_mdc_signal(token: str) -> bool:
@@ -130,7 +133,9 @@ def _has_explicit_mdc_signal(token: str) -> bool:
         return False
     if len(token) < 2 or not _is_mdc_token(token):
         return False
-    return _auto_mdc_signal_count(token) == 1
+    return _auto_mdc_signal_count(token) == 1 and any(
+        _is_auto_marker(character) for character in token[1:]
+    )
 
 
 def _canonicalize_mdc_token(token: str) -> str:
