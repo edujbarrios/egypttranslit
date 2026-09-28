@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "egypttranslit"
-version = "0.8.0"
+version = "0.9.0"
 description = "A small Python library for converting Egyptological transliteration to canonical Unicode."
 authors = [{ name = "Eduardo J. Barrios", email = "edujbarrios@outlook.com" }]
 readme = "README.md"
@@ -36,6 +36,7 @@ Homepage = "https://edujbarrios.com"
 Repository = "https://github.com/edujbarrios/egypttranslit"
 Issues = "https://github.com/edujbarrios/egypttranslit/issues"
 Citation = "https://github.com/edujbarrios/egypttranslit/blob/main/CITATION.cff"
+Changelog = "https://github.com/edujbarrios/egypttranslit/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
 packages = ["egypttranslit"]

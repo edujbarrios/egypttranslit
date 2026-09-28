@@ -26,9 +26,23 @@ def _extract(pattern: str, text: str, label: str) -> str:
     return match.group(1)
 
 
+def _valid_orcid(identifier: str) -> bool:
+    compact = identifier.replace("-", "")
+    if re.fullmatch(r"\d{15}[\dX]", compact) is None:
+        return False
+
+    total = 0
+    for character in compact[:-1]:
+        total = (total + int(character)) * 2
+    checksum = (12 - (total % 11)) % 11
+    expected = "X" if checksum == 10 else str(checksum)
+    return compact[-1] == expected
+
+
 def main() -> None:
     pyproject = _read("pyproject.toml")
     citation = _read("CITATION.cff")
+    changelog = _read("CHANGELOG.md")
     readme = _read("README.md")
     _read("LICENSE")
     _read("NOTICE")
@@ -58,12 +72,29 @@ def main() -> None:
     if build_requirement.count("==") != 1:
         raise SystemExit("setuptools build backend must be pinned exactly")
 
-    if 'license = "Apache-2.0"' not in pyproject:
-        raise SystemExit("pyproject.toml must declare Apache-2.0")
+    citation_license = _extract(
+        r'^license:\s*"([^"]+)"\s*$', citation, "CITATION.cff license"
+    )
+    orcid = _extract(
+        r'^\s*orcid:\s*"https://orcid\.org/([0-9X-]+)"\s*$',
+        citation,
+        "CITATION.cff ORCID",
+    )
+    if not _valid_orcid(orcid):
+        raise SystemExit(f"CITATION.cff contains an invalid ORCID checksum: {orcid}")
+
+    if 'license = "Apache-2.0"' not in pyproject or citation_license != "Apache-2.0":
+        raise SystemExit("release metadata must consistently declare Apache-2.0")
     if f'Repository = "{REPOSITORY}"' not in pyproject:
         raise SystemExit("pyproject.toml repository URL is unexpected")
     if f'repository-code: "{REPOSITORY}"' not in citation:
         raise SystemExit("CITATION.cff repository URL is unexpected")
+    if 'title: "egypttranslit"' not in citation or "type: software" not in citation:
+        raise SystemExit("CITATION.cff must identify egypttranslit as software")
+    if f"## {project_version}" not in changelog:
+        raise SystemExit(f"CHANGELOG.md has no entry for {project_version}")
+    if 'egypttranslit = "egypttranslit.__main__:main"' not in pyproject:
+        raise SystemExit("pyproject.toml console entry point is missing or unexpected")
     if "CITATION.cff" not in readme:
         raise SystemExit("README.md must direct users to CITATION.cff")
     if "@software{" in readme or "@misc{" in readme:
@@ -73,7 +104,7 @@ def main() -> None:
 
     print(
         f"release metadata OK: {PACKAGE} {project_version}; "
-        f"build backend {build_requirement}"
+        f"build backend {build_requirement}; ORCID checksum OK"
     )
 
 
