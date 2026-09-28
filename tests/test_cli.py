@@ -13,6 +13,7 @@ class CommandLineTests(unittest.TestCase):
             [sys.executable, "-m", "egypttranslit", *args],
             input=input_text,
             text=True,
+            encoding="utf-8",
             capture_output=True,
             check=False,
         )
@@ -33,6 +34,12 @@ class CommandLineTests(unittest.TestCase):
         result = self.run_cli("--mode", "unicode", "ȝ", "ʿ", "ỉ")
         self.assertEqual(result.returncode, 0)
         self.assertEqual(result.stdout, "ꜣ ꜥ ꞽ")
+
+    def test_unicode_mode_reads_utf8_stdin(self):
+        source = "ȝ ʿ ỉ\nḫpr"
+        result = self.run_cli("--mode", "unicode", input_text=source)
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.stdout, "ꜣ ꜥ ꞽ\nḫpr")
 
     def test_version(self):
         result = self.run_cli("--version")
