@@ -16,9 +16,7 @@ class MetadataTests(unittest.TestCase):
         project_match = re.search(
             r'^version\s*=\s*"([^"]+)"\s*$', pyproject, re.MULTILINE
         )
-        citation_match = re.search(
-            r'^version:\s*"([^"]+)"\s*$', citation, re.MULTILINE
-        )
+        citation_match = re.search(r'^version:\s*"([^"]+)"\s*$', citation, re.MULTILINE)
         self.assertIsNotNone(project_match)
         self.assertIsNotNone(citation_match)
         assert project_match is not None
