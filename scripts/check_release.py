@@ -50,6 +50,14 @@ def main() -> None:
         details = ", ".join(f"{name}={value}" for name, value in versions.items())
         raise SystemExit(f"release versions are not synchronized: {details}")
 
+    build_requirement = _extract(
+        r'^requires\s*=\s*\["(setuptools==[^"]+)"\]\s*$',
+        pyproject,
+        "exact setuptools build requirement",
+    )
+    if build_requirement.count("==") != 1:
+        raise SystemExit("setuptools build backend must be pinned exactly")
+
     if 'license = "Apache-2.0"' not in pyproject:
         raise SystemExit("pyproject.toml must declare Apache-2.0")
     if f'Repository = "{REPOSITORY}"' not in pyproject:
@@ -63,7 +71,10 @@ def main() -> None:
             "README.md duplicates BibTeX; keep citation metadata in CITATION.cff"
         )
 
-    print(f"release metadata OK: {PACKAGE} {project_version}")
+    print(
+        f"release metadata OK: {PACKAGE} {project_version}; "
+        f"build backend {build_requirement}"
+    )
 
 
 if __name__ == "__main__":
