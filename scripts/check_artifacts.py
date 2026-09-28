@@ -55,7 +55,19 @@ _FORBIDDEN_PARTS = {
     "__pycache__",
 }
 _FORBIDDEN_NAMES = {".DS_Store", ".env", "Thumbs.db"}
-_FORBIDDEN_SUFFIXES = {".key", ".p12", ".pfx", ".pem", ".pyc", ".pyo"}
+_FORBIDDEN_SUFFIXES = {
+    ".dll",
+    ".dylib",
+    ".exe",
+    ".key",
+    ".p12",
+    ".pfx",
+    ".pem",
+    ".pyc",
+    ".pyd",
+    ".pyo",
+    ".so",
+}
 
 
 def _fail(message: str) -> None:
@@ -119,8 +131,9 @@ def _audit_core_metadata(text: str, *, source: str, version: str) -> None:
 
 
 def _audit_wheel(path: Path, *, version: str) -> None:
-    if not path.name.startswith(f"{PACKAGE}-{version}-"):
-        _fail(f"wheel filename does not match project version {version}: {path.name}")
+    expected_name = f"{PACKAGE}-{version}-py3-none-any.whl"
+    if path.name != expected_name:
+        _fail(f"wheel must be universal {expected_name!r}; found {path.name!r}")
 
     with zipfile.ZipFile(path) as archive:
         names = archive.namelist()
@@ -147,8 +160,16 @@ def _audit_wheel(path: Path, *, version: str) -> None:
 
     with zipfile.ZipFile(path) as archive:
         metadata_text = archive.read(metadata_name).decode("utf-8")
+        wheel_text = archive.read(f"{dist_info}WHEEL").decode("utf-8")
         entry_points = archive.read(f"{dist_info}entry_points.txt").decode("utf-8")
     _audit_core_metadata(metadata_text, source="wheel METADATA", version=version)
+
+    wheel_metadata = Parser().parsestr(wheel_text)
+    if wheel_metadata.get("Root-Is-Purelib", "").lower() != "true":
+        _fail("wheel must declare Root-Is-Purelib: true")
+    tags = set(wheel_metadata.get_all("Tag", []))
+    if tags != {"py3-none-any"}:
+        _fail(f"wheel compatibility tags are unexpected: {sorted(tags)}")
 
     if "[console_scripts]" not in entry_points or not any(
         line.strip() == "egypttranslit = egypttranslit.__main__:main"
