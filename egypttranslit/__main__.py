@@ -15,6 +15,14 @@ _CONVERTERS: dict[str, Callable[[str], str]] = {
 }
 
 
+def _configure_utf8_stdio() -> None:
+    """Use deterministic UTF-8 for redirected and interactive standard streams."""
+    for stream in (sys.stdin, sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            reconfigure(encoding="utf-8", errors="strict")
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="egypttranslit",
@@ -42,6 +50,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     """Run the command-line interface and return a process exit code."""
+    _configure_utf8_stdio()
     args = _build_parser().parse_args(argv)
     source = " ".join(args.text) if args.text else sys.stdin.read()
     sys.stdout.write(_CONVERTERS[args.mode](source))
