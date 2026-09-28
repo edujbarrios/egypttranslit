@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.11", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - uses: actions/checkout@v4
@@ -26,16 +26,33 @@ jobs:
         run: python -m unittest discover -s tests
       - name: Check installed dependencies
         run: python -m pip check
-      - name: Build wheel
-        run: python -m pip wheel . --no-deps --wheel-dir dist
-      - name: Verify metadata files in wheel
+
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: Install packaging tools
+        run: python -m pip install --upgrade build twine
+      - name: Build wheel and source distribution
+        run: python -m build
+      - name: Validate PyPI metadata
+        run: python -m twine check dist/*
+      - name: Verify wheel contents
         run: |
           WHEEL="$(ls dist/*.whl)"
           python -m zipfile -l "$WHEEL" | grep -E 'LICENSE|NOTICE|egypttranslit/py\.typed'
+      - name: Verify source distribution contents
+        run: |
+          SDIST="$(ls dist/*.tar.gz)"
+          tar -tzf "$SDIST" | grep -E '/(README\.md|LICENSE|NOTICE|CITATION\.cff|egypttranslit/py\.typed|tests/test_converter\.py)$'
       - name: Verify isolated wheel installation
         run: |
+          WHEEL="$(ls "$GITHUB_WORKSPACE"/dist/*.whl)"
           python -m venv /tmp/egypttranslit-wheel
-          /tmp/egypttranslit-wheel/bin/python -m pip install --no-deps dist/*.whl
+          /tmp/egypttranslit-wheel/bin/python -m pip install --no-deps "$WHEEL"
           cd /tmp
           /tmp/egypttranslit-wheel/bin/python - <<'PY'
           from importlib.resources import files
@@ -43,7 +60,34 @@ jobs:
 
           assert __version__ == "0.6.0"
           assert parse("nTr Htp") == "nṯr ḥtp"
+          assert parse("ra") == "ra"
           assert parse_mdc("ra nfr") == "r\uA725 nfr"
           assert normalize_unicode("\u021D \u02BF") == "\uA723 \uA725"
           assert files("egypttranslit").joinpath("py.typed").is_file()
           PY
+      - name: Verify isolated source distribution installation
+        run: |
+          SDIST="$(ls "$GITHUB_WORKSPACE"/dist/*.tar.gz)"
+          python -m venv /tmp/egypttranslit-sdist
+          /tmp/egypttranslit-sdist/bin/python -m pip install --no-deps "$SDIST"
+          cd /tmp
+          /tmp/egypttranslit-sdist/bin/python - <<'PY'
+          from egypttranslit import __version__, parse_mdc
+
+          assert __version__ == "0.6.0"
+          assert parse_mdc("nTr Htp") == "nṯr ḥtp"
+          PY
+
+  python-next:
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.15"
+          allow-prereleases: true
+      - name: Install editable package
+        run: python -m pip install -e .
+      - name: Run tests
+        run: python -m unittest discover -s tests
