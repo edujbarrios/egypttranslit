@@ -48,7 +48,7 @@ class HieroglyphUnicodeTests(unittest.TestCase):
 
     def test_lost_sign_variation_sequences_are_preserved(self):
         source = "".join(
-            chr(code_point) + "\uFE00" for code_point in range(0x13443, 0x13447)
+            chr(code_point) + "\ufe00" for code_point in range(0x13443, 0x13447)
         )
 
         for converter in (normalize_unicode, parse, parse_mdc):
@@ -60,7 +60,7 @@ class HieroglyphUnicodeTests(unittest.TestCase):
         source = (
             "\U00013000\U00013440"
             "\U00013001\U00013447"
-            "\U00013002\U0001344B"
+            "\U00013002\U0001344b"
             "\U00013003\U00013455"
         )
 
