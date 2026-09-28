@@ -1,6 +1,8 @@
 include README.md
+include RELEASING.md
 include LICENSE
 include NOTICE
 include CITATION.cff
 recursive-include egypttranslit py.typed
+recursive-include scripts *.py
 recursive-include tests *.py
