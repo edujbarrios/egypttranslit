@@ -27,6 +27,8 @@ Update the version in exactly these release metadata files:
 
 `egypttranslit.__version__` is read from the installed distribution metadata and must not be edited manually.
 
+The build backend in `pyproject.toml` is intentionally pinned with `==`. Updating setuptools is a reviewed maintenance change: change the pin explicitly and let the complete CI gate rebuild and revalidate the distributions.
+
 Then run:
 
 ```bash
@@ -37,9 +39,18 @@ python -m unittest discover -s tests
 
 ## 3. Build clean artifacts
 
+The CI release toolchain is pinned to:
+
+- `setuptools==84.0.0` as the PEP 517 build backend;
+- `build==1.6.1`;
+- `twine==7.0.0`;
+- `mypy==2.3.1` and `ruff==0.16.9` for quality checks.
+
+For a local release check, use the same packaging tools:
+
 ```bash
 rm -rf build dist *.egg-info
-python -m pip install --upgrade build twine
+python -m pip install build==1.6.1 twine==7.0.0
 export SOURCE_DATE_EPOCH="$(git log -1 --pretty=%ct)"
 python -m build
 python -m twine check dist/*
