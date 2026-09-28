@@ -52,6 +52,28 @@ class UnicodeContractTests(unittest.TestCase):
                 self.assertEqual(parse(source), expected)
                 self.assertEqual(parse_mdc(source), expected)
 
+    def test_legacy_yod_survives_additional_combining_marks(self):
+        cases = {
+            "i\u0323\u0313": "ꞽ\u0323",
+            "i\u0313\u0323": "ꞽ\u0323",
+            "i\u0301\u0357": "ꞽ\u0301",
+            "I\u0323\u0486": "Ꞽ\u0323",
+        }
+        for source, expected in cases.items():
+            expected = unicodedata.normalize("NFC", expected)
+            for operation in (normalize_unicode, parse, parse_mdc):
+                with self.subTest(source=source, operation=operation.__name__):
+                    result = operation(source)
+                    self.assertEqual(result, expected)
+                    self.assertTrue(unicodedata.is_normalized("NFC", result))
+
+    def test_multiple_legacy_yod_marks_are_preserved_without_guessing(self):
+        source = "i\u0313\u0357"
+        expected = unicodedata.normalize("NFC", source)
+        for operation in (normalize_unicode, parse, parse_mdc):
+            with self.subTest(operation=operation.__name__):
+                self.assertEqual(operation(source), expected)
+
     def test_output_is_nfc_for_combining_mark_contexts(self):
         sources = (
             "h\u0323tp",
