@@ -67,13 +67,13 @@ _SIGN_CODE_RE = re.compile(
     r"|(?:[A-IK-Z]|Aa|AA|NL|NU|Ff))\d{1,3}[A-Za-z]{0,5}\Z"
 )
 
-# Auto parsing deliberately accepts only unusually strong ASCII evidence.
-# Lowercase ``a`` and ``x`` are too common in ordinary Latin text, while a
-# leading MdC capital can also be an ordinary title-case word (Data, Train,
-# Hat, etc.). An uppercase shortcut inside a token, or an embedded ``3``, is
-# distinctive enough to convert that token without inferring anything about
-# neighbouring tokens. Callers who know the source is MdC should use
-# :func:`parse_mdc` and avoid detection entirely.
+# Auto parsing deliberately accepts only unusually strong *and singular*
+# ASCII evidence. Lowercase ``a`` and ``x`` are too common in ordinary Latin
+# text, while a leading MdC capital can also be an ordinary title-case word.
+# Exactly one embedded ``3`` or internal MdC uppercase shortcut is enough to
+# convert a token such as ``n3``, ``nTr`` or ``mAat``. Multiple strong markers
+# are treated as ambiguous and preserved; callers who know the source is MdC
+# should use :func:`parse_mdc` and avoid detection entirely.
 _AUTO_MDC_MARKERS = frozenset("AHXSTD")
 
 _TOKEN_RE = re.compile(
@@ -117,15 +117,20 @@ def _is_mdc_token(token: str) -> bool:
     return bool(token) and all(character in _ALLOWED_TOKEN for character in token)
 
 
+def _auto_mdc_signal_count(token: str) -> int:
+    """Count distinctive ASCII signals used by conservative auto parsing."""
+    return token.count("3") + sum(
+        character in _AUTO_MDC_MARKERS for character in token[1:]
+    )
+
+
 def _has_explicit_mdc_signal(token: str) -> bool:
     """Return whether one ASCII token is distinctive enough for auto parsing."""
     if _is_sign_code(token):
         return False
     if len(token) < 2 or not _is_mdc_token(token):
         return False
-    if "3" in token:
-        return True
-    return any(character in _AUTO_MDC_MARKERS for character in token[1:])
+    return _auto_mdc_signal_count(token) == 1
 
 
 def _canonicalize_mdc_token(token: str) -> str:
@@ -138,11 +143,11 @@ def parse(text: str) -> str:
     """Conservatively convert only self-signalling MdC tokens to Unicode.
 
     Automatic parsing never infers that neighbouring ASCII tokens are MdC.
-    Ambiguous lowercase text, title-case words, one-letter shortcuts, Gardiner
-    or JSesh sign codes, and words containing a plain ``x`` are preserved.
-    Verified historical Unicode forms are still canonicalized. Use
-    :func:`parse_mdc` when the input format is known and complete MdC
-    transliteration conversion is desired.
+    Ambiguous lowercase text, title-case words, one-letter shortcuts, tokens
+    with multiple strong MdC markers, Gardiner/JSesh sign codes, and words
+    containing only a plain ``x`` are preserved. Verified historical Unicode
+    forms are still canonicalized. Use :func:`parse_mdc` when the input format
+    is known and complete MdC transliteration conversion is desired.
     """
     prepared = _prepare_text(text)
 
