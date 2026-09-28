@@ -53,9 +53,7 @@ _UPPERCASE_XH = "H\u0331"
 # Plain j and q are accepted but intentionally not rewritten. IFAO documents
 # j/ỉ and q/ḳ as legitimate editorial alternatives, not encoding errors.
 _MDC_ASCII = frozenset("AaiyjwybpfmnrhHxXzsSqkgtTdD3")
-_UNICODE_TRANSLITERATION = frozenset(
-    "ꜢꜣꜤꜥȜȝʿḤḥḪḫẖŠšṮṯḎḏỈỉḲḳꞼꞽ"
-)
+_UNICODE_TRANSLITERATION = frozenset("ꜢꜣꜤꜥȜȝʿḤḥḪḫẖŠšṮṯḎḏỈỉḲḳꞼꞽ")
 _ALLOWED_TOKEN = _MDC_ASCII | _UNICODE_TRANSLITERATION
 
 # Auto parsing deliberately accepts only unusually strong ASCII evidence.
@@ -68,8 +66,7 @@ _ALLOWED_TOKEN = _MDC_ASCII | _UNICODE_TRANSLITERATION
 _AUTO_MDC_MARKERS = frozenset("AHXSTD")
 
 _TOKEN_RE = re.compile(
-    re.escape(_UPPERCASE_XH)
-    + r"|[A-Za-z0-9ꜢꜣꜤꜥȜȝʿḤḥḪḫẖŠšṮṯḎḏỈỉḲḳꞼꞽ]+"
+    re.escape(_UPPERCASE_XH) + r"|[A-Za-z0-9ꜢꜣꜤꜥȜȝʿḤḥḪḫẖŠšṮṯḎḏỈỉḲḳꞼꞽ]+"
 )
 
 

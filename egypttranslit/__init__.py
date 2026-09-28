@@ -1,6 +1,12 @@
 """Egyptological transliteration to canonical Unicode."""
 
+import importlib.metadata
+
 from .converter import convert, normalize_unicode, parse, parse_mdc
 
-__all__ = ["parse", "parse_mdc", "normalize_unicode", "convert"]
-__version__ = "0.6.0"
+__all__ = ["convert", "normalize_unicode", "parse", "parse_mdc"]
+
+try:
+    __version__ = importlib.metadata.version("egypttranslit")
+except importlib.metadata.PackageNotFoundError:  # pragma: no cover
+    __version__ = "0+unknown"

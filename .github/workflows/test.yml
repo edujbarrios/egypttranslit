@@ -16,8 +16,8 @@ jobs:
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install editable package
@@ -27,15 +27,39 @@ jobs:
       - name: Check installed dependencies
         run: python -m pip check
 
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Install package and quality tools
+        run: python -m pip install -e . mypy ruff
+      - name: Compile Python sources
+        run: python -m compileall -q egypttranslit tests scripts
+      - name: Lint
+        run: python -m ruff check egypttranslit tests scripts
+      - name: Check formatting
+        run: python -m ruff format --check egypttranslit tests scripts
+      - name: Type check public package
+        run: python -m mypy --strict egypttranslit
+      - name: Validate release metadata
+        run: python scripts/check_release.py
+
   package:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.14"
       - name: Install packaging tools
         run: python -m pip install --upgrade build twine
+      - name: Install package for release checks
+        run: python -m pip install -e .
+      - name: Validate release metadata
+        run: python scripts/check_release.py
       - name: Build wheel and source distribution
         run: python -m build
       - name: Validate PyPI metadata
@@ -55,10 +79,11 @@ jobs:
           /tmp/egypttranslit-wheel/bin/python -m pip install --no-deps "$WHEEL"
           cd /tmp
           /tmp/egypttranslit-wheel/bin/python - <<'PY'
+          from importlib.metadata import version
           from importlib.resources import files
           from egypttranslit import __version__, normalize_unicode, parse, parse_mdc
 
-          assert __version__ == "0.6.0"
+          assert __version__ == version("egypttranslit")
           assert parse("nTr mAat") == "nṯr mꜣꜥt"
           assert parse("A taxi on the X axis.") == "A taxi on the X axis."
           assert parse_mdc("nTr Htp") == "nṯr ḥtp"
@@ -72,9 +97,10 @@ jobs:
           /tmp/egypttranslit-sdist/bin/python -m pip install --no-deps "$SDIST"
           cd /tmp
           /tmp/egypttranslit-sdist/bin/python - <<'PY'
+          from importlib.metadata import version
           from egypttranslit import __version__, parse_mdc
 
-          assert __version__ == "0.6.0"
+          assert __version__ == version("egypttranslit")
           assert parse_mdc("nTr Htp") == "nṯr ḥtp"
           PY
 
@@ -82,8 +108,8 @@ jobs:
     continue-on-error: true
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.15"
           allow-prereleases: true
