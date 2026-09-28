@@ -9,12 +9,12 @@ GitHub Actions must pass:
 - Python 3.10, 3.11, 3.12, 3.13 and 3.14 tests on Linux;
 - the full suite on current GitHub-hosted Windows and macOS runners;
 - compile, lint, formatting and strict type checks;
-- release metadata synchronization;
+- release metadata, citation and changelog validation;
 - wheel and source-distribution builds;
 - `twine check`;
 - the wheel reproducibility check with a fixed `SOURCE_DATE_EPOCH`;
 - the artifact-content audit;
-- isolated installation from both wheel and sdist.
+- isolated installation from both wheel and sdist, including the `egypttranslit` console command.
 
 The Python 3.15 pre-release job is informative and is allowed to fail until 3.15 becomes a supported release.
 
@@ -24,6 +24,8 @@ Update the version in exactly these release metadata files:
 
 - `pyproject.toml`;
 - `CITATION.cff`.
+
+Add a matching `## <version>` entry to `CHANGELOG.md`. `scripts/check_release.py` rejects a release when these versions drift, when the citation identity is inconsistent or when the ORCID checksum is invalid.
 
 `egypttranslit.__version__` is read from the installed distribution metadata and must not be edited manually.
 
@@ -61,7 +63,7 @@ Both a wheel and a source distribution must be produced. `SOURCE_DATE_EPOCH` giv
 
 ## 4. Inspect the artifacts
 
-Confirm that the wheel contains only the runtime package and distribution metadata, including `py.typed`, `LICENSE` and `NOTICE`. The source distribution must also contain the README, citation metadata, release documentation, tests and release-audit scripts. Neither artifact may contain caches, bytecode, repository metadata, environment files, private-key-like files or unsafe archive paths.
+Confirm that the wheel contains only the runtime package and distribution metadata, including the console entry point, `py.typed`, `LICENSE` and `NOTICE`. The source distribution must also contain the README, changelog, citation metadata, release documentation, tests and release-audit scripts. Neither artifact may contain caches, bytecode, repository metadata, environment files, private-key-like files or unsafe archive paths.
 
 CI performs these checks automatically, but they should still be reviewed before the first public release.
 
