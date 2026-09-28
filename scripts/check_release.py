@@ -59,7 +59,9 @@ def main() -> None:
     if "CITATION.cff" not in readme:
         raise SystemExit("README.md must direct users to CITATION.cff")
     if "@software{" in readme or "@misc{" in readme:
-        raise SystemExit("README.md duplicates BibTeX; keep citation metadata in CITATION.cff")
+        raise SystemExit(
+            "README.md duplicates BibTeX; keep citation metadata in CITATION.cff"
+        )
 
     print(f"release metadata OK: {PACKAGE} {project_version}")
 
