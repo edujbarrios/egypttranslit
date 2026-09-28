@@ -1,0 +1,6 @@
+include README.md
+include LICENSE
+include NOTICE
+include CITATION.cff
+recursive-include egypttranslit py.typed
+recursive-include tests *.py
