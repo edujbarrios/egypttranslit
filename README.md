@@ -6,6 +6,8 @@ It is intended for researchers, digital-humanities projects and small scripts th
 
 ## Install
 
+Requires Python 3.10 or newer.
+
 Clone the repository and install it locally:
 
 ```bash
@@ -18,25 +20,27 @@ python -m pip install -e .
 
 | Function | Use it when | Example |
 | --- | --- | --- |
-| `parse(text)` | You want conservative automatic parsing. | `parse("nTr Htp")` |
-| `parse_mdc(text)` | You know the input is Manuel de Codage. | `parse_mdc("ra nfr")` |
+| `parse(text)` | You want conservative automatic parsing. | `parse("nTr mAat")` |
+| `parse_mdc(text)` | You know the input is Manuel de Codage. | `parse_mdc("nTr Htp xpr")` |
 | `normalize_unicode(text)` | The text is already Egyptological Unicode and only needs safe normalization. | `normalize_unicode("ȝ ʿ ỉ")` |
-| `convert(text)` | You prefer a descriptive alias for `parse()`. | `convert("Htp")` |
+| `convert(text)` | You prefer an alias for `parse()`. | `convert("nTr mAat")` |
 
-Normal use:
+For normal use:
 
 ```python
 from egypttranslit import parse
 
-result = parse("nTr Htp")
+result = parse("nTr mAat")
 ```
 
-If the input is definitely MdC, prefer the explicit mode:
+`parse()` is deliberately conservative. It converts only tokens that carry sufficiently distinctive MdC evidence and never assumes that neighbouring ASCII words are also MdC. Ambiguous input is preserved rather than guessed.
+
+If the input is definitely MdC, use the explicit mode for complete conversion:
 
 ```python
 from egypttranslit import parse_mdc
 
-result = parse_mdc("ra nfr")
+result = parse_mdc("nTr Htp xpr m mAat")
 ```
 
 For already-Unicode scholarly text:

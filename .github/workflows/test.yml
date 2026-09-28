@@ -59,9 +59,9 @@ jobs:
           from egypttranslit import __version__, normalize_unicode, parse, parse_mdc
 
           assert __version__ == "0.6.0"
-          assert parse("nTr Htp") == "nṯr ḥtp"
-          assert parse("ra") == "ra"
-          assert parse_mdc("ra nfr") == "r\uA725 nfr"
+          assert parse("nTr mAat") == "nṯr mꜣꜥt"
+          assert parse("A taxi on the X axis.") == "A taxi on the X axis."
+          assert parse_mdc("nTr Htp") == "nṯr ḥtp"
           assert normalize_unicode("\u021D \u02BF") == "\uA723 \uA725"
           assert files("egypttranslit").joinpath("py.typed").is_file()
           PY
