@@ -16,6 +16,7 @@ _REQUIRED_WHEEL_FILES = {
 }
 
 _REQUIRED_SDIST_FILES = {
+    "CHANGELOG.md",
     "CITATION.cff",
     "LICENSE",
     "MANIFEST.in",
