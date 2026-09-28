@@ -1,9 +1,7 @@
 """Fail fast when release metadata drifts out of sync."""
 
-from __future__ import annotations
-
+import importlib.metadata
 import re
-from importlib.metadata import version as distribution_version
 from pathlib import Path
 
 
@@ -42,7 +40,7 @@ def main() -> None:
     citation_version = _extract(
         r'^version:\s*"([^"]+)"\s*$', citation, "CITATION.cff version"
     )
-    installed_version = distribution_version(PACKAGE)
+    installed_version = importlib.metadata.version(PACKAGE)
 
     versions = {
         "pyproject.toml": project_version,
