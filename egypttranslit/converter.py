@@ -118,6 +118,11 @@ def _is_sign_code(token: str) -> bool:
     return _SIGN_CODE_RE.fullmatch(token) is not None
 
 
+def _is_numeric_run(token: str) -> bool:
+    """Return whether *token* is an unambiguous multi-digit ASCII number."""
+    return len(token) > 1 and token.isascii() and token.isdigit()
+
+
 def _is_mdc_token(token: str) -> bool:
     if token == _UPPERCASE_XH:
         return True
@@ -145,7 +150,7 @@ def _has_explicit_mdc_signal(token: str) -> bool:
 
 
 def _canonicalize_mdc_token(token: str) -> str:
-    if token == _UPPERCASE_XH or _is_sign_code(token):
+    if token == _UPPERCASE_XH or _is_sign_code(token) or _is_numeric_run(token):
         return token
     return token.translate(_UNICODE_CANONICAL_TRANSLATION).translate(_MDC_TRANSLATION)
 
@@ -176,9 +181,9 @@ def parse_mdc(text: str) -> str:
 
     This explicit mode assumes that the caller intentionally supplied MdC
     transliteration. Known shortcuts are converted even when unknown
-    characters occur nearby. Gardiner/JSesh sign codes, unknown characters,
-    punctuation and layout are preserved. Editorial alternatives such as
-    ``j``/``ỉ`` and ``q``/``ḳ`` are not guessed.
+    characters occur nearby. Multi-digit numbers, Gardiner/JSesh sign codes,
+    unknown characters, punctuation and layout are preserved. Editorial
+    alternatives such as ``j``/``ỉ`` and ``q``/``ḳ`` are not guessed.
     """
     prepared = _prepare_text(text)
 

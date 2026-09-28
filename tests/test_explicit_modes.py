@@ -14,7 +14,16 @@ class ExplicitModeTests(unittest.TestCase):
     def test_parse_mdc_converts_known_shortcuts_next_to_unknown_characters(self):
         self.assertEqual(parse_mdc("v3 Htp"), "vꜣ ḥtp")
         self.assertEqual(parse_mdc("fooAbar"), "fooꜣbꜥr")
-        self.assertEqual(parse_mdc("123"), "12ꜣ")
+
+    def test_parse_mdc_preserves_multi_digit_numbers(self):
+        for source in ("12", "33", "123", "2023", "1000"):
+            with self.subTest(source=source):
+                self.assertEqual(parse_mdc(source), source)
+
+    def test_parse_mdc_still_accepts_three_as_aleph_in_transliteration(self):
+        self.assertEqual(parse_mdc("3"), "ꜣ")
+        self.assertEqual(parse_mdc("n3"), "nꜣ")
+        self.assertEqual(parse_mdc("3b"), "ꜣb")
 
     def test_parse_mdc_preserves_uppercase_xh_unicode_sequence(self):
         self.assertEqual(parse_mdc("H\u0331"), "H\u0331")
