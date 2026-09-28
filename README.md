@@ -21,7 +21,7 @@ python -m pip install -e .
 | Function | Use it when | Example |
 | --- | --- | --- |
 | `parse(text)` | You want conservative automatic parsing. | `parse("nTr mAat")` |
-| `parse_mdc(text)` | You know the input is Manuel de Codage. | `parse_mdc("nTr Htp xpr")` |
+| `parse_mdc(text)` | You know the input is Manuel de Codage transliteration. | `parse_mdc("nTr Htp xpr")` |
 | `normalize_unicode(text)` | The text is already Egyptological Unicode and only needs safe normalization. | `normalize_unicode("ȝ ʿ ỉ")` |
 | `convert(text)` | You prefer an alias for `parse()`. | `convert("nTr mAat")` |
 
@@ -35,7 +35,7 @@ result = parse("nTr mAat")
 
 `parse()` is deliberately conservative. It converts only tokens that carry sufficiently distinctive MdC evidence and never assumes that neighbouring ASCII words are also MdC. Ambiguous input is preserved rather than guessed.
 
-If the input is definitely MdC, use the explicit mode for complete conversion:
+If the input is definitely MdC transliteration, use the explicit mode for complete conversion:
 
 ```python
 from egypttranslit import parse_mdc
@@ -51,7 +51,7 @@ from egypttranslit import normalize_unicode
 result = normalize_unicode(text)
 ```
 
-Unknown characters, punctuation, whitespace and hieroglyphs are preserved. Editorial alternatives such as `j` versus Egyptological yod and `q` versus `ḳ` are not guessed automatically.
+Unknown characters, punctuation, whitespace and hieroglyphs are preserved. Gardiner/JSesh sign identifiers such as `A1`, `D36` and `T3` are also preserved rather than interpreted as transliteration. Editorial alternatives such as `j` versus Egyptological yod and `q` versus `ḳ` are not guessed automatically.
 
 ## Citation
 
@@ -74,6 +74,7 @@ The conversion rules and Unicode handling in this project were checked against:
 - IFAO / Sorbonne Université / BnF, **Papyrus Prisse** transliteration corpus: https://prisse.ifao.egnet.net/verse
 - Egyptologists' Electronic Forum (EEF), **Transliteration**: https://www.egyptologyforum.org/EEFTransl.html
 - Unicode Consortium, **Characters and Combining Marks — Egyptological Yod**: https://www.unicode.org/faq/char_combmark.html#Q_Egyptological_Yod
+- Unicode Consortium, **UAX #57: Unicode Egyptian Hieroglyph Database**: https://unicode.org/reports/tr57/
 
 ## License
 

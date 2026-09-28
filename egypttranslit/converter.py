@@ -56,6 +56,17 @@ _MDC_ASCII = frozenset("AaiyjwybpfmnrhHxXzsSqkgtTdD3")
 _UNICODE_TRANSLITERATION = frozenset("ꜢꜣꜤꜥȜȝʿḤḥḪḫẖŠšṮṯḎḏỈỉḲḳꞼꞽ")
 _ALLOWED_TOKEN = _MDC_ASCII | _UNICODE_TRANSLITERATION
 
+# Gardiner/Hieroglyphica and JSesh sign identifiers are part of MdC-family
+# data, but they are not transliteration. Protect them before applying the
+# ASCII shortcut mapping. The accepted forms follow the current Unicode UAX
+# #57 source-index syntaxes for kEH_HG and kEH_JSesh, with both Aa and AA
+# accepted for the supplementary Gardiner category.
+# https://unicode.org/reports/tr57/
+_SIGN_CODE_RE = re.compile(
+    r"(?:(?:US1|US22|US248|US685)(?:[A-IK-Z]|Aa|AA|NL|NU)"
+    r"|(?:[A-IK-Z]|Aa|AA|NL|NU|Ff))\d{1,3}[A-Za-z]{0,5}\Z"
+)
+
 # Auto parsing deliberately accepts only unusually strong ASCII evidence.
 # Lowercase ``a`` and ``x`` are too common in ordinary Latin text, while a
 # leading MdC capital can also be an ordinary title-case word (Data, Train,
@@ -95,6 +106,11 @@ def normalize_unicode(text: str) -> str:
     )
 
 
+def _is_sign_code(token: str) -> bool:
+    """Return whether *token* is a protected Gardiner/JSesh sign identifier."""
+    return _SIGN_CODE_RE.fullmatch(token) is not None
+
+
 def _is_mdc_token(token: str) -> bool:
     if token == _UPPERCASE_XH:
         return True
@@ -103,6 +119,8 @@ def _is_mdc_token(token: str) -> bool:
 
 def _has_explicit_mdc_signal(token: str) -> bool:
     """Return whether one ASCII token is distinctive enough for auto parsing."""
+    if _is_sign_code(token):
+        return False
     if len(token) < 2 or not _is_mdc_token(token):
         return False
     if "3" in token:
@@ -111,7 +129,7 @@ def _has_explicit_mdc_signal(token: str) -> bool:
 
 
 def _canonicalize_mdc_token(token: str) -> str:
-    if token == _UPPERCASE_XH:
+    if token == _UPPERCASE_XH or _is_sign_code(token):
         return token
     return token.translate(_UNICODE_CANONICAL_TRANSLATION).translate(_MDC_TRANSLATION)
 
@@ -120,10 +138,11 @@ def parse(text: str) -> str:
     """Conservatively convert only self-signalling MdC tokens to Unicode.
 
     Automatic parsing never infers that neighbouring ASCII tokens are MdC.
-    Ambiguous lowercase text, title-case words, one-letter shortcuts and words
-    containing a plain ``x`` are preserved. Verified historical Unicode forms
-    are still canonicalized. Use :func:`parse_mdc` when the input format is
-    known and complete MdC conversion is desired.
+    Ambiguous lowercase text, title-case words, one-letter shortcuts, Gardiner
+    or JSesh sign codes, and words containing a plain ``x`` are preserved.
+    Verified historical Unicode forms are still canonicalized. Use
+    :func:`parse_mdc` when the input format is known and complete MdC
+    transliteration conversion is desired.
     """
     prepared = _prepare_text(text)
 
@@ -137,12 +156,13 @@ def parse(text: str) -> str:
 
 
 def parse_mdc(text: str) -> str:
-    """Convert known MdC shortcuts while preserving everything else.
+    """Convert known MdC transliteration shortcuts while preserving structure.
 
-    This explicit mode assumes that the caller intentionally supplied MdC.
-    Every known shortcut is converted even when unknown characters occur in
-    the same token. Unknown characters, punctuation and layout are preserved.
-    Editorial alternatives such as ``j``/``ỉ`` and ``q``/``ḳ`` are not guessed.
+    This explicit mode assumes that the caller intentionally supplied MdC
+    transliteration. Known shortcuts are converted even when unknown
+    characters occur nearby. Gardiner/JSesh sign codes, unknown characters,
+    punctuation and layout are preserved. Editorial alternatives such as
+    ``j``/``ỉ`` and ``q``/``ḳ`` are not guessed.
     """
     prepared = _prepare_text(text)
 
