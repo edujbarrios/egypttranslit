@@ -50,22 +50,14 @@ _LEGACY_YOD_SEQUENCES = {
 # shortcut when the caller supplies valid uppercase scholarly Unicode.
 _UPPERCASE_XH = "H\u0331"
 
-# Plain j and q are accepted but intentionally not rewritten. IFAO documents
-# j/ỉ and q/ḳ as legitimate editorial alternatives, not encoding errors.
-_MDC_ASCII = frozenset("AaiyjwybpfmnrhHxXzsSqkgtTdD3")
-_UNICODE_TRANSLITERATION = frozenset(
-    "ꜢꜣꜤꜥȜȝʿḤḥḪḫẖŠšṮṯḎḏỈỉḲḳꞼꞽ"
-)
-_ALLOWED_TOKEN = _MDC_ASCII | _UNICODE_TRANSLITERATION
-
-# Markers strong enough to identify an individual token as transliteration.
-_STRONG_MARKERS = frozenset("AHxXSTD") | _UNICODE_TRANSLITERATION
-
-# Document-wide inference deliberately excludes canonical Ꜣ/ꜣ, Ꜥ/ꜥ and
-# Ꞽ/ꞽ. Those characters can be produced while converting otherwise ambiguous
-# tokens; allowing them to become document-level evidence on the next call
-# would make parsing non-idempotent and could corrupt neighbouring prose.
-_DOCUMENT_MARKERS = frozenset("AHxXSTDȜȝʿỈỉḤḥḪḫŠšṮṯḎḏḲḳ")
+# Auto parsing deliberately accepts only unusually strong ASCII evidence.
+# Lowercase ``a`` and ``x`` are too common in ordinary Latin text, while a
+# leading MdC capital can also be an ordinary title-case word (Data, Train,
+# Hat, etc.). An uppercase shortcut inside a token, or an embedded ``3``, is
+# distinctive enough to convert that token without inferring anything about
+# neighbouring tokens. Callers who know the source is MdC should use
+# :func:`parse_mdc` and avoid detection entirely.
+_AUTO_MDC_MARKERS = frozenset("AHXSTD")
 
 _TOKEN_RE = re.compile(
     re.escape(_UPPERCASE_XH)
@@ -86,81 +78,49 @@ def _prepare_text(text: str) -> str:
 
 
 def normalize_unicode(text: str) -> str:
-    """Normalize known Egyptological Unicode variants without parsing MdC.
+    """Normalize verified Egyptological Unicode variants without parsing MdC.
 
     This is the safest operation for already-Unicode or mixed scholarly text:
     it repairs only verified encoding equivalents and never interprets ASCII
     letters such as ``A`` or ``a`` as Manuel de Codage shortcuts.
     """
     prepared = _prepare_text(text)
-    return unicodedata.normalize("NFC", prepared.translate(_UNICODE_CANONICAL_TRANSLATION))
-
-
-def _is_mdc_token(token: str) -> bool:
-    if token == _UPPERCASE_XH:
-        return True
-    return bool(token) and all(character in _ALLOWED_TOKEN for character in token)
-
-
-def _lexical_tokens(text: str) -> list[str]:
-    tokens: list[str] = []
-    for token in _TOKEN_RE.findall(text):
-        if token.isdigit() and token != "3":
-            continue
-        tokens.append(token)
-    return tokens
-
-
-def _document_looks_like_mdc(text: str) -> bool:
-    """Return true only when a complete fragment has explicit MdC evidence.
-
-    Plain lowercase ASCII is deliberately insufficient evidence. Ambiguous
-    input is preserved by :func:`parse`; callers who know the source is MdC
-    should use :func:`parse_mdc` instead of relying on a guess.
-    """
-    tokens = _lexical_tokens(text)
-    if not tokens or not all(_is_mdc_token(token) for token in tokens):
-        return False
-
-    return any(
-        token == _UPPERCASE_XH
-        or any(character in _DOCUMENT_MARKERS for character in token)
-        for token in tokens
+    return unicodedata.normalize(
+        "NFC", prepared.translate(_UNICODE_CANONICAL_TRANSLATION)
     )
 
 
-def _should_convert_token(token: str, document_is_mdc: bool) -> bool:
-    if token == _UPPERCASE_XH:
+def _has_explicit_mdc_signal(token: str) -> bool:
+    """Return whether one ASCII token is distinctive enough for auto parsing."""
+    if len(token) < 2:
         return False
-    if not _is_mdc_token(token):
-        return False
-    if document_is_mdc:
+    if "3" in token:
         return True
-    if any(character in _STRONG_MARKERS for character in token):
-        return True
-    return "3" in token and len(token) > 1
+    return any(character in _AUTO_MDC_MARKERS for character in token[1:])
 
 
-def _canonicalize_token(token: str) -> str:
+def _canonicalize_mdc_token(token: str) -> str:
     if token == _UPPERCASE_XH:
         return token
     return token.translate(_UNICODE_CANONICAL_TRANSLATION).translate(_MDC_TRANSLATION)
 
 
 def parse(text: str) -> str:
-    """Conservatively parse likely MdC and return canonical Unicode.
+    """Conservatively convert only self-signalling MdC tokens to Unicode.
 
-    Ambiguous ordinary Latin text is preserved. Use :func:`parse_mdc` when the
-    caller already knows that the input is Manuel de Codage transliteration.
+    Automatic parsing never infers that neighbouring ASCII tokens are MdC.
+    Ambiguous lowercase text, title-case words, one-letter shortcuts and words
+    containing a plain ``x`` are preserved. Verified historical Unicode forms
+    are still canonicalized. Use :func:`parse_mdc` when the input format is
+    known and complete MdC conversion is desired.
     """
     prepared = _prepare_text(text)
-    document_is_mdc = _document_looks_like_mdc(prepared)
 
     def replace(match: re.Match[str]) -> str:
         token = match.group(0)
-        if not _should_convert_token(token, document_is_mdc):
-            return token.translate(_UNICODE_CANONICAL_TRANSLATION)
-        return _canonicalize_token(token)
+        if _has_explicit_mdc_signal(token):
+            return _canonicalize_mdc_token(token)
+        return token.translate(_UNICODE_CANONICAL_TRANSLATION)
 
     return unicodedata.normalize("NFC", _TOKEN_RE.sub(replace, prepared))
 
@@ -175,7 +135,7 @@ def parse_mdc(text: str) -> str:
     prepared = _prepare_text(text)
 
     def replace(match: re.Match[str]) -> str:
-        return _canonicalize_token(match.group(0))
+        return _canonicalize_mdc_token(match.group(0))
 
     return unicodedata.normalize("NFC", _TOKEN_RE.sub(replace, prepared))
 
