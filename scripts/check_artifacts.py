@@ -86,9 +86,18 @@ def _audit_wheel(path: Path) -> None:
         _fail("wheel must contain exactly one .dist-info/METADATA file")
     dist_info = metadata_files[0].removesuffix("METADATA")
 
-    for required in ("WHEEL", "RECORD"):
+    for required in ("WHEEL", "RECORD", "entry_points.txt"):
         if f"{dist_info}{required}" not in members:
             _fail(f"wheel is missing {dist_info}{required}")
+
+    with zipfile.ZipFile(path) as archive:
+        entry_points = archive.read(f"{dist_info}entry_points.txt").decode("utf-8")
+    if "[console_scripts]" not in entry_points or not any(
+        line.strip() == "egypttranslit = egypttranslit.__main__:main"
+        for line in entry_points.splitlines()
+    ):
+        _fail("wheel console entry point is missing or unexpected")
+
     for license_name in ("LICENSE", "NOTICE"):
         if not any(
             name.startswith(dist_info)
