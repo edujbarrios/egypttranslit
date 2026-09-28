@@ -50,6 +50,14 @@ _LEGACY_YOD_SEQUENCES = {
 # shortcut when the caller supplies valid uppercase scholarly Unicode.
 _UPPERCASE_XH = "H\u0331"
 
+# Plain j and q are accepted but intentionally not rewritten. IFAO documents
+# j/ỉ and q/ḳ as legitimate editorial alternatives, not encoding errors.
+_MDC_ASCII = frozenset("AaiyjwybpfmnrhHxXzsSqkgtTdD3")
+_UNICODE_TRANSLITERATION = frozenset(
+    "ꜢꜣꜤꜥȜȝʿḤḥḪḫẖŠšṮṯḎḏỈỉḲḳꞼꞽ"
+)
+_ALLOWED_TOKEN = _MDC_ASCII | _UNICODE_TRANSLITERATION
+
 # Auto parsing deliberately accepts only unusually strong ASCII evidence.
 # Lowercase ``a`` and ``x`` are too common in ordinary Latin text, while a
 # leading MdC capital can also be an ordinary title-case word (Data, Train,
@@ -90,9 +98,15 @@ def normalize_unicode(text: str) -> str:
     )
 
 
+def _is_mdc_token(token: str) -> bool:
+    if token == _UPPERCASE_XH:
+        return True
+    return bool(token) and all(character in _ALLOWED_TOKEN for character in token)
+
+
 def _has_explicit_mdc_signal(token: str) -> bool:
     """Return whether one ASCII token is distinctive enough for auto parsing."""
-    if len(token) < 2:
+    if len(token) < 2 or not _is_mdc_token(token):
         return False
     if "3" in token:
         return True
@@ -135,7 +149,10 @@ def parse_mdc(text: str) -> str:
     prepared = _prepare_text(text)
 
     def replace(match: re.Match[str]) -> str:
-        return _canonicalize_mdc_token(match.group(0))
+        token = match.group(0)
+        if not _is_mdc_token(token):
+            return token.translate(_UNICODE_CANONICAL_TRANSLATION)
+        return _canonicalize_mdc_token(token)
 
     return unicodedata.normalize("NFC", _TOKEN_RE.sub(replace, prepared))
 
