@@ -86,6 +86,9 @@ jobs:
           assert __version__ == version("egypttranslit")
           assert parse("nTr mAat") == "nṯr mꜣꜥt"
           assert parse("A taxi on the X axis.") == "A taxi on the X axis."
+          assert parse("mATH") == "mATH"
+          assert parse_mdc("mATH") == "mꜣṯḥ"
+          assert parse_mdc("A1-nTr-D36-Htp-T3") == "A1-nṯr-D36-ḥtp-T3"
           assert parse_mdc("nTr Htp") == "nṯr ḥtp"
           assert normalize_unicode("\u021D \u02BF") == "\uA723 \uA725"
           assert files("egypttranslit").joinpath("py.typed").is_file()
@@ -98,10 +101,11 @@ jobs:
           cd /tmp
           /tmp/egypttranslit-sdist/bin/python - <<'PY'
           from importlib.metadata import version
-          from egypttranslit import __version__, parse_mdc
+          from egypttranslit import __version__, parse, parse_mdc
 
           assert __version__ == version("egypttranslit")
-          assert parse_mdc("nTr Htp") == "nṯr ḥtp"
+          assert parse("mATH") == "mATH"
+          assert parse_mdc("A1-nTr-D36-Htp-T3") == "A1-nṯr-D36-ḥtp-T3"
           PY
 
   python-next:
