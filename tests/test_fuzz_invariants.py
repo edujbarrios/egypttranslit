@@ -103,10 +103,11 @@ class DeterministicFuzzInvariantTests(unittest.TestCase):
         automatic_line = "A1 nṯr D36 Htp ꜣ ꜥ ꞽ \U00013000\U00013437\U00013001\n"
         explicit_line = "A1 nṯr D36 ḥtp ꜣ ꜥ ꞽ \U00013000\U00013437\U00013001\n"
         source = source_line * 5_000
+        normalized = source.replace("ȝ", "ꜣ").replace("ʿ", "ꜥ").replace("ỉ", "ꞽ")
 
         self.assertEqual(parse(source), automatic_line * 5_000)
         self.assertEqual(parse_mdc(source), explicit_line * 5_000)
-        self.assertEqual(normalize_unicode(source), source.replace("ȝ", "ꜣ").replace("ʿ", "ꜥ").replace("ỉ", "ꞽ"))
+        self.assertEqual(normalize_unicode(source), normalized)
 
 
 if __name__ == "__main__":
