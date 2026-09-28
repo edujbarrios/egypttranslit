@@ -1,12 +1,12 @@
 """Egyptological transliteration to canonical Unicode."""
 
-from importlib.metadata import PackageNotFoundError, version as _distribution_version
+import importlib.metadata
 
 from .converter import convert, normalize_unicode, parse, parse_mdc
 
-__all__ = ["parse", "parse_mdc", "normalize_unicode", "convert"]
+__all__ = ["convert", "normalize_unicode", "parse", "parse_mdc"]
 
 try:
-    __version__ = _distribution_version("egypttranslit")
-except PackageNotFoundError:  # pragma: no cover - source tree without installation
+    __version__ = importlib.metadata.version("egypttranslit")
+except importlib.metadata.PackageNotFoundError:  # pragma: no cover
     __version__ = "0+unknown"
