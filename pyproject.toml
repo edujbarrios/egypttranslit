@@ -28,6 +28,9 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+[project.scripts]
+egypttranslit = "egypttranslit.__main__:main"
+
 [project.urls]
 Homepage = "https://edujbarrios.com"
 Repository = "https://github.com/edujbarrios/egypttranslit"

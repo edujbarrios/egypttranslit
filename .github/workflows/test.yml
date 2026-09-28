@@ -127,6 +127,9 @@ jobs:
           assert normalize_unicode("\u021D \u02BF") == "\uA723 \uA725"
           assert files("egypttranslit").joinpath("py.typed").is_file()
           PY
+          test "$(/tmp/egypttranslit-wheel/bin/egypttranslit --mode mdc 'nTr Htp')" = "nṯr ḥtp"
+          printf 'nTr Htp\n' | /tmp/egypttranslit-wheel/bin/egypttranslit --mode mdc > /tmp/wheel-cli.txt
+          printf 'nṯr ḥtp\n' | cmp - /tmp/wheel-cli.txt
       - name: Verify isolated source distribution installation
         run: |
           SDIST="$(ls "$GITHUB_WORKSPACE"/dist/*.tar.gz)"
@@ -141,6 +144,7 @@ jobs:
           assert parse("mATH") == "mATH"
           assert parse_mdc("A1-nTr-D36-Htp-T3") == "A1-nṯr-D36-ḥtp-T3"
           PY
+          test "$(/tmp/egypttranslit-sdist/bin/egypttranslit --mode mdc 'nTr Htp')" = "nṯr ḥtp"
 
   python-next:
     continue-on-error: true

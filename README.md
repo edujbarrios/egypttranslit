@@ -51,6 +51,24 @@ from egypttranslit import normalize_unicode
 result = normalize_unicode(text)
 ```
 
+## Command line
+
+Installation also provides the `egypttranslit` command. It uses the same conversion modes as the Python API:
+
+```bash
+egypttranslit "nTr mAat"
+egypttranslit --mode mdc "nTr Htp"
+egypttranslit --mode unicode "ȝ ʿ ỉ"
+```
+
+For files or pipelines, omit the text argument and send input through stdin; whitespace and line breaks are preserved:
+
+```bash
+cat input.txt | egypttranslit --mode mdc > output.txt
+```
+
+The modes are `auto` (default), `mdc` and `unicode`. `egypttranslit --version` prints the installed version.
+
 Unknown characters, punctuation and whitespace are preserved. Encoded Egyptian hieroglyphs are treated as opaque Unicode data: the original Egyptian Hieroglyphs block, Egyptian Hieroglyph Format Controls (including joiners, segment delimiters, mirror/damage controls and variation sequences), and Egyptian Hieroglyphs Extended-A are never interpreted as transliteration. Gardiner/JSesh sign identifiers such as `A1`, `D36` and `T3` are also preserved rather than interpreted as transliteration. Editorial alternatives such as `j` versus Egyptological yod and `q` versus `ḳ` are not guessed automatically.
 
 ## Supported API and scope
