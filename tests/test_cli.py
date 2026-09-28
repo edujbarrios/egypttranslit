@@ -1,8 +1,24 @@
 import subprocess
 import sys
 import unittest
+from unittest.mock import patch
 
 import egypttranslit
+from egypttranslit import __main__ as cli
+
+
+class _BrokenPipeOutput:
+    def __init__(self) -> None:
+        self.closed = False
+
+    def write(self, text: str) -> int:
+        raise BrokenPipeError
+
+    def flush(self) -> None:
+        pass
+
+    def close(self) -> None:
+        self.closed = True
 
 
 class CommandLineTests(unittest.TestCase):
@@ -40,6 +56,25 @@ class CommandLineTests(unittest.TestCase):
         result = self.run_cli("--mode", "unicode", input_text=source)
         self.assertEqual(result.returncode, 0)
         self.assertEqual(result.stdout, "ꜣ ꜥ ꞽ\nḫpr")
+
+    def test_invalid_utf8_stdin_fails_cleanly(self):
+        result = subprocess.run(
+            [sys.executable, "-m", "egypttranslit", "--mode", "unicode"],
+            input=b"\xff",
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 2)
+        stderr = result.stderr.decode("utf-8")
+        self.assertIn("Unicode input/output error", stderr)
+        self.assertNotIn("Traceback", stderr)
+
+    def test_broken_pipe_is_a_clean_pipeline_termination(self):
+        output = _BrokenPipeOutput()
+        with patch.object(sys, "stdout", output):
+            returncode = cli.main(["nTr"])
+        self.assertEqual(returncode, 0)
+        self.assertTrue(output.closed)
 
     def test_version(self):
         result = self.run_cli("--version")
