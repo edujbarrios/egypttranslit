@@ -1,6 +1,6 @@
+import importlib.metadata
 import re
 import unittest
-from importlib.metadata import version
 from pathlib import Path
 
 import egypttranslit
@@ -25,7 +25,7 @@ class MetadataTests(unittest.TestCase):
         assert project_match is not None
         assert citation_match is not None
 
-        installed = version("egypttranslit")
+        installed = importlib.metadata.version("egypttranslit")
         self.assertEqual(project_match.group(1), installed)
         self.assertEqual(citation_match.group(1), installed)
         self.assertEqual(egypttranslit.__version__, installed)
