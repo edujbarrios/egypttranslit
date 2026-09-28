@@ -4,7 +4,6 @@ from itertools import product
 
 from egypttranslit import normalize_unicode, parse, parse_mdc
 
-
 _MDC_ALPHABET = tuple(dict.fromkeys("AaiyjwybpfmnrhHxXzsSqkgtTdD3"))
 
 
