@@ -8,19 +8,30 @@ version = "0.6.0"
 description = "A small Python library for converting Egyptological transliteration to canonical Unicode."
 authors = [{ name = "Eduardo J. Barrios", email = "edujbarrios@outlook.com" }]
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
 dependencies = []
 keywords = ["egyptology", "transliteration", "unicode", "manuel-de-codage", "mdc"]
 classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Text Processing :: Linguistic",
+    "Typing :: Typed",
     "Operating System :: OS Independent",
 ]
 
 [project.urls]
 Homepage = "https://edujbarrios.com"
 Repository = "https://github.com/edujbarrios/egypttranslit"
+Issues = "https://github.com/edujbarrios/egypttranslit/issues"
 Citation = "https://github.com/edujbarrios/egypttranslit/blob/main/CITATION.cff"
 
 [tool.setuptools]
