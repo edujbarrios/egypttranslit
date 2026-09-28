@@ -33,16 +33,11 @@ _UNICODE_CANONICAL_TRANSLATION = str.maketrans(
     }
 )
 
-# Unicode documents before Unicode 12 may encode Egyptological yod as i plus
+# Unicode documents before Unicode 12 may encode Egyptological yod as i/I plus
 # one of these combining marks. U+A7BD/U+A7BC are the preferred modern forms.
-_LEGACY_YOD_SEQUENCES = {
-    "i\u0313": "ꞽ",
-    "i\u0357": "ꞽ",
-    "i\u0486": "ꞽ",
-    "I\u0313": "Ꞽ",
-    "I\u0357": "Ꞽ",
-    "I\u0486": "Ꞽ",
-}
+# Work at the full combining-cluster level because canonical ordering may place
+# other scholarly/editorial marks between the base letter and the yod mark.
+_LEGACY_YOD_MARKS = frozenset(("\u0313", "\u0357", "\u0486"))
 
 # U+1E96 LATIN SMALL LETTER H WITH LINE BELOW has no single-code-point
 # uppercase mapping. Unicode uppercases it to H + COMBINING MACRON BELOW.
@@ -93,11 +88,45 @@ def _require_text(text: str) -> None:
         raise TypeError("text must be a string")
 
 
+def _canonicalize_legacy_yod(text: str) -> str:
+    """Replace one historical yod mark per i/I combining cluster."""
+    decomposed = unicodedata.normalize("NFD", text)
+    result: list[str] = []
+    index = 0
+
+    while index < len(decomposed):
+        base = decomposed[index]
+        if base not in {"i", "I"}:
+            result.append(base)
+            index += 1
+            continue
+
+        end = index + 1
+        while end < len(decomposed) and unicodedata.combining(decomposed[end]):
+            end += 1
+
+        marks = decomposed[index + 1 : end]
+        yod_positions = [
+            position for position, mark in enumerate(marks) if mark in _LEGACY_YOD_MARKS
+        ]
+        if len(yod_positions) == 1:
+            result.append("ꞽ" if base == "i" else "Ꞽ")
+            yod_position = yod_positions[0]
+            result.extend(
+                mark for position, mark in enumerate(marks) if position != yod_position
+            )
+        else:
+            result.append(base)
+            result.extend(marks)
+
+        index = end
+
+    return "".join(result)
+
+
 def _prepare_text(text: str) -> str:
     _require_text(text)
-    for sequence, replacement in _LEGACY_YOD_SEQUENCES.items():
-        text = text.replace(sequence, replacement)
-    return unicodedata.normalize("NFC", text)
+    return unicodedata.normalize("NFC", _canonicalize_legacy_yod(text))
 
 
 def normalize_unicode(text: str) -> str:
