@@ -57,14 +57,20 @@ _UNICODE_TRANSLITERATION = frozenset("ꜢꜣꜤꜥȜȝʿḤḥḪḫẖŠšṮ�
 _ALLOWED_TOKEN = _MDC_ASCII | _UNICODE_TRANSLITERATION
 
 # Gardiner/Hieroglyphica and JSesh sign identifiers are part of MdC-family
-# data, but they are not transliteration. Protect them before applying the
-# ASCII shortcut mapping. The accepted forms follow the current Unicode UAX
-# #57 source-index syntaxes for kEH_HG and kEH_JSesh, with both Aa and AA
-# accepted for the supplementary Gardiner category.
+# data, but they are not transliteration. Protect only strings accepted by the
+# normative source grammars in Unicode UAX #57:
+#   kEH_HG:    ([A-IK-Z]|AA)\d{1,3}[A-Za-z]{0,2}
+#   kEH_JSesh: ([A-IK-Z]|Aa|NL|NU|Ff)\d{1,3}[A-Za-z]{0,5}
+#           or (US1|US22|US248|US685)([A-IK-Z]|Aa|NL|NU)
+#              \d{1,3}[A-Za-z]{0,5}
 # https://unicode.org/reports/tr57/
 _SIGN_CODE_RE = re.compile(
-    r"(?:(?:US1|US22|US248|US685)(?:[A-IK-Z]|Aa|AA|NL|NU)"
-    r"|(?:[A-IK-Z]|Aa|AA|NL|NU|Ff))\d{1,3}[A-Za-z]{0,5}\Z"
+    r"(?:"
+    r"(?:[A-IK-Z]|AA)\d{1,3}[A-Za-z]{0,2}"
+    r"|(?:[A-IK-Z]|Aa|NL|NU|Ff)\d{1,3}[A-Za-z]{0,5}"
+    r"|(?:US1|US22|US248|US685)(?:[A-IK-Z]|Aa|NL|NU)"
+    r"\d{1,3}[A-Za-z]{0,5}"
+    r")\Z"
 )
 
 # Auto parsing deliberately accepts only unusually strong *and singular*

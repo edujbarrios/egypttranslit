@@ -49,10 +49,9 @@ class ParserContractTests(unittest.TestCase):
                     self.assertEqual(parse(normalized), parse(source))
                     self.assertEqual(parse_mdc(normalized), parse_mdc(source))
 
-    def test_sign_code_boundaries_are_protected_exhaustively(self):
+    def test_jsesh_sign_code_boundaries_are_protected_exhaustively(self):
         categories = tuple("ABCDEFGHIKLMNOPQRSTUVWXYZ") + (
             "Aa",
-            "AA",
             "NL",
             "NU",
             "Ff",
@@ -66,9 +65,19 @@ class ParserContractTests(unittest.TestCase):
                 self.assertEqual(parse(code), code)
                 self.assertEqual(parse_mdc(code), code)
 
+    def test_hieroglyphica_aa_boundary_is_protected_exactly(self):
+        numbers = (1, 3, 36, 999)
+        suffixes = ("", "a", "AB")
+
+        for number, suffix in product(numbers, suffixes):
+            code = f"AA{number}{suffix}"
+            with self.subTest(code=code):
+                self.assertEqual(parse(code), code)
+                self.assertEqual(parse_mdc(code), code)
+
     def test_jsesh_prefixed_sign_code_boundaries_are_protected(self):
         prefixes = ("US1", "US22", "US248", "US685")
-        categories = ("A", "I", "K", "Z", "Aa", "AA", "NL", "NU")
+        categories = ("A", "I", "K", "Z", "Aa", "NL", "NU")
         numbers = (1, 3, 36, 999)
         suffixes = ("", "a", "AB", "abcde")
 
@@ -80,10 +89,17 @@ class ParserContractTests(unittest.TestCase):
                 self.assertEqual(parse(code), code)
                 self.assertEqual(parse_mdc(code), code)
 
-    def test_sign_code_digit_limit_does_not_overprotect_near_misses(self):
-        self.assertEqual(parse_mdc("A1000"), "ꜣ1000")
-        self.assertEqual(parse_mdc("D1000"), "ḏ1000")
-        self.assertEqual(parse_mdc("T1000"), "ṯ1000")
+    def test_sign_code_grammar_does_not_overprotect_near_misses(self):
+        cases = {
+            "A1000": "ꜣ1000",
+            "D1000": "ḏ1000",
+            "T1000": "ṯ1000",
+            "AA1abc": "ꜣꜣ1ꜥbc",
+            "US1AA1": "Uš1ꜣꜣ1",
+        }
+        for source, explicit in cases.items():
+            with self.subTest(source=source):
+                self.assertEqual(parse_mdc(source), explicit)
 
 
 if __name__ == "__main__":
