@@ -10,6 +10,7 @@ DIST = Path("dist")
 
 _REQUIRED_WHEEL_FILES = {
     "egypttranslit/__init__.py",
+    "egypttranslit/__main__.py",
     "egypttranslit/converter.py",
     "egypttranslit/py.typed",
 }
@@ -23,10 +24,12 @@ _REQUIRED_SDIST_FILES = {
     "RELEASING.md",
     "pyproject.toml",
     "egypttranslit/__init__.py",
+    "egypttranslit/__main__.py",
     "egypttranslit/converter.py",
     "egypttranslit/py.typed",
     "scripts/check_artifacts.py",
     "scripts/check_release.py",
+    "tests/test_cli.py",
     "tests/test_converter.py",
     "tests/test_parser_contracts.py",
     "tests/test_unicode_contract.py",
