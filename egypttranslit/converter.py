@@ -140,19 +140,17 @@ def parse(text: str) -> str:
 
 
 def parse_mdc(text: str) -> str:
-    """Parse text that is explicitly known to use Manuel de Codage shortcuts.
+    """Convert known MdC shortcuts while preserving everything else.
 
-    Unlike :func:`parse`, this function does not try to distinguish MdC from
-    ordinary Latin prose. Unknown characters and punctuation are preserved.
+    This explicit mode assumes that the caller intentionally supplied MdC.
+    Every known shortcut is converted even when unknown characters occur in
+    the same token. Unknown characters, punctuation and layout are preserved.
     Editorial alternatives such as ``j``/``ỉ`` and ``q``/``ḳ`` are not guessed.
     """
     prepared = _prepare_text(text)
 
     def replace(match: re.Match[str]) -> str:
-        token = match.group(0)
-        if not _is_mdc_token(token):
-            return token.translate(_UNICODE_CANONICAL_TRANSLATION)
-        return _canonicalize_mdc_token(token)
+        return _canonicalize_mdc_token(match.group(0))
 
     return unicodedata.normalize("NFC", _TOKEN_RE.sub(replace, prepared))
 
