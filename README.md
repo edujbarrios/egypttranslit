@@ -1,5 +1,7 @@
 # egypttranslit
 
+[![PyPI version](https://img.shields.io/pypi/v/egypttranslit.svg)](https://pypi.org/project/egypttranslit/)
+
 A small Python library for converting Egyptological transliteration into clean Unicode.
 
 It is intended for researchers, digital-humanities projects and scripts that need reliable Manuel de Codage-style transliteration conversion without a larger toolchain.
