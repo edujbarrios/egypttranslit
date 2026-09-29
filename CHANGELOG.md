@@ -2,6 +2,12 @@
 
 This file records user-visible changes. Citation metadata remains in `CITATION.cff`.
 
+## 1.0.1
+
+- Fixed profiled batch conversion so unknown profiles are rejected even when the input iterable is empty.
+- Fixed diagnostics for uppercase Egyptological `ẖ` encoded as `H` plus COMBINING MACRON BELOW, which is now recognized as Unicode rather than ambiguous ASCII.
+- Hardened the command-line interface so OS-level stdin/stdout failures return a concise I/O error instead of a traceback while preserving clean broken-pipe termination.
+
 ## 1.0.0
 
 - First stable release.
