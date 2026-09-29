@@ -80,19 +80,13 @@ def _detect_input(text: str, warnings: tuple[str, ...]) -> tuple[DetectedInput, 
         return "none", 1.0
 
     has_unicode = any(
-        character in _UNICODE_TRANSLITERATION
-        for token in tokens
-        for character in token
+        character in _UNICODE_TRANSLITERATION for token in tokens for character in token
     )
     has_ascii = any(
-        character in _ASCII_TRANSLITERATION
-        for token in tokens
-        for character in token
+        character in _ASCII_TRANSLITERATION for token in tokens for character in token
     )
     has_strong_mdc = any(
-        character in _STRONG_MDC_MARKERS
-        for token in tokens
-        for character in token[1:]
+        character in _STRONG_MDC_MARKERS for token in tokens for character in token[1:]
     )
 
     if has_unicode:
