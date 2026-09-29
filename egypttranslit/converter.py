@@ -49,7 +49,7 @@ _UPPERCASE_XH = "H\u0331"
 
 # Plain j and q are accepted but intentionally not rewritten by default.
 # Callers that explicitly need a legacy fully-diacritic representation may
-# request profile="legacy-diacritics" from parse_mdc().
+# request it through parse_mdc_profiled().
 _MDC_ASCII = frozenset("AaiyjwybpfmnrhHxXzsSqkgtTdD3")
 _UNICODE_TRANSLITERATION = frozenset("ꜢꜣꜤꜥȜȝʿḤḥḪḫẖŠšṮṯḎḏỈỉḲḳꞼꞽ")
 _ALLOWED_TOKEN = _MDC_ASCII | _UNICODE_TRANSLITERATION
@@ -211,21 +211,7 @@ def parse(text: str) -> str:
     return unicodedata.normalize("NFC", _TOKEN_RE.sub(replace, prepared))
 
 
-def parse_mdc(
-    text: str, *, profile: TransliterationProfile = "default"
-) -> str:
-    """Convert known MdC transliteration shortcuts while preserving structure.
-
-    This explicit mode assumes that the caller intentionally supplied MdC
-    transliteration. Known shortcuts are converted even when unknown
-    characters occur nearby. Multi-digit numbers, Gardiner/JSesh sign codes,
-    unknown characters, punctuation and layout are preserved.
-
-    The default profile preserves editorial alternatives such as ``j`` and
-    ``q``. ``profile="legacy-diacritics"`` additionally renders ``j`` as
-    Egyptological yod ``ꞽ`` and ``q`` as ``ḳ``. The profile is deliberately
-    explicit so the library never guesses an editorial convention.
-    """
+def _parse_mdc_with_profile(text: str, profile: TransliterationProfile) -> str:
     prepared = _prepare_text(text)
     # Validate the profile even for empty/punctuation-only input.
     apply_profile("", profile)
@@ -234,6 +220,31 @@ def parse_mdc(
         return _canonicalize_mdc_token(match.group(0), profile=profile)
 
     return unicodedata.normalize("NFC", _TOKEN_RE.sub(replace, prepared))
+
+
+def parse_mdc(text: str) -> str:
+    """Convert known MdC shortcuts while preserving structure and API stability.
+
+    This explicit mode assumes that the caller intentionally supplied MdC
+    transliteration. Known shortcuts are converted even when unknown
+    characters occur nearby. Multi-digit numbers, Gardiner/JSesh sign codes,
+    unknown characters, punctuation and layout are preserved. Editorial
+    alternatives such as ``j`` and ``q`` remain unchanged.
+    """
+    return _parse_mdc_with_profile(text, "default")
+
+
+def parse_mdc_profiled(
+    text: str, *, profile: TransliterationProfile = "default"
+) -> str:
+    """Convert known MdC shortcuts using an explicit editorial output profile.
+
+    ``profile="legacy-diacritics"`` additionally renders ``j`` as
+    Egyptological yod ``ꞽ`` and ``q`` as ``ḳ``. This advanced API is separate
+    from :func:`parse_mdc` so the stable package-level converter contract stays
+    one string in, one string out.
+    """
+    return _parse_mdc_with_profile(text, profile)
 
 
 def convert(text: str) -> str:
