@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "egypttranslit"
-version = "0.9.0"
+version = "1.0.0"
 description = "A small Python library for converting Egyptological transliteration to canonical Unicode."
 authors = [{ name = "Eduardo J. Barrios", email = "edujbarrios@outlook.com" }]
 readme = "README.md"
@@ -14,7 +14,7 @@ license-files = ["LICENSE", "NOTICE"]
 dependencies = []
 keywords = ["egyptology", "transliteration", "unicode", "manuel-de-codage", "mdc"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
