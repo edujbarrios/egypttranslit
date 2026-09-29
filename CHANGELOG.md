@@ -2,6 +2,17 @@
 
 This file records user-visible changes. Citation metadata remains in `CITATION.cff`.
 
+## 1.0.0
+
+- First stable release.
+- Added conservative automatic parsing, explicit MdC conversion and canonical Unicode normalization.
+- Added declarative transliteration profiles, including `gardiner-1957` and the compatibility alias `legacy-diacritics`.
+- Added batch conversion helpers for multiple transliterations while preserving input order.
+- Added diagnostics and validation for ambiguous and mixed encodings.
+- Added the `egypttranslit` CLI with `auto`, `mdc` and `unicode` modes.
+- Protected Gardiner/JSesh sign identifiers and encoded hieroglyph data from accidental transliteration conversion.
+- Added cross-platform tests, property checks, package validation and Trusted Publishing release workflows.
+
 ## 0.9.0
 
 - Added the dependency-free `egypttranslit` command with `auto`, `mdc` and `unicode` modes, stdin support, explicit profile selection and deterministic UTF-8 I/O across Linux, macOS and Windows.
