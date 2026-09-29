@@ -23,5 +23,9 @@ def apply_profile(text: str, profile: TransliterationProfile) -> str:
         table = _PROFILES[profile]
     except KeyError as exc:
         supported = ", ".join(sorted(_PROFILES))
-        raise ValueError(f"unknown transliteration profile {profile!r}; expected one of: {supported}") from exc
+        message = (
+            f"unknown transliteration profile {profile!r}; "
+            f"expected one of: {supported}"
+        )
+        raise ValueError(message) from exc
     return text.translate(table)
