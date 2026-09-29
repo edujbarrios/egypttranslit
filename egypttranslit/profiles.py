@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
 from importlib.resources import files
 from typing import Final, Literal, TypedDict, cast
 
@@ -14,10 +15,21 @@ TransliterationProfile = Literal[
 
 
 class _ProfileSpec(TypedDict, total=False):
-    mapping: dict[str | int, str | int | None]
-    alias: str
+    mapping: dict[str, str]
+    alias: TransliterationProfile
     description: str
     source: str
+
+
+@dataclass(frozen=True, slots=True)
+class ProfileInfo:
+    """Read-only metadata describing one transliteration profile."""
+
+    name: TransliterationProfile
+    description: str
+    source: str | None
+    alias_of: TransliterationProfile | None
+    mapping: tuple[tuple[str, str], ...]
 
 
 def _load_profile_specs() -> dict[str, _ProfileSpec]:
@@ -54,6 +66,32 @@ def _resolve_profile(profile: TransliterationProfile) -> _ProfileSpec:
         raise RuntimeError(
             f"profile {profile!r} refers to unknown alias {alias!r}"
         ) from exc
+
+
+def get_profile_info(profile: TransliterationProfile) -> ProfileInfo:
+    """Return documented metadata for one supported transliteration profile."""
+    try:
+        spec = _PROFILE_SPECS[profile]
+    except KeyError as exc:
+        supported = ", ".join(TRANSLITERATION_PROFILES)
+        raise ValueError(
+            f"unknown transliteration profile {profile!r}; expected one of: {supported}"
+        ) from exc
+
+    resolved = _resolve_profile(profile)
+    alias = spec.get("alias")
+    return ProfileInfo(
+        name=profile,
+        description=spec.get("description", ""),
+        source=spec.get("source", resolved.get("source")),
+        alias_of=alias,
+        mapping=tuple(sorted(resolved.get("mapping", {}).items())),
+    )
+
+
+def list_profile_info() -> tuple[ProfileInfo, ...]:
+    """Return metadata for all supported profiles in stable CLI/API order."""
+    return tuple(get_profile_info(profile) for profile in TRANSLITERATION_PROFILES)
 
 
 def apply_profile(text: str, profile: TransliterationProfile) -> str:
