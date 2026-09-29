@@ -6,7 +6,8 @@ import argparse
 import sys
 from collections.abc import Callable, Sequence
 
-from . import __version__, normalize_unicode, parse, parse_mdc
+from . import __version__, normalize_unicode, parse
+from .converter import parse_mdc_profiled
 from .profiles import TRANSLITERATION_PROFILES
 
 _CONVERTERS: dict[str, Callable[[str], str]] = {
@@ -73,7 +74,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         source = " ".join(args.text) if args.text else sys.stdin.read()
         if args.mode == "mdc":
-            output = parse_mdc(source, profile=args.profile)
+            output = parse_mdc_profiled(source, profile=args.profile)
         else:
             output = _CONVERTERS[args.mode](source)
         sys.stdout.write(output)
