@@ -24,59 +24,111 @@ python -m pip install -e .
 
 ## Quick guide
 
-| Function | Use it when | Example |
-| --- | --- | --- |
-| `parse(text)` | You want conservative automatic parsing. | `parse("nTr mAat")` |
-| `parse_mdc(text)` | You know the input is Manuel de Codage transliteration. | `parse_mdc("nTr Htp xpr")` |
-| `normalize_unicode(text)` | The text is already Egyptological Unicode and only needs safe normalization. | `normalize_unicode("ȝ ʿ ỉ")` |
-| `convert(text)` | You prefer an alias for `parse()`. | `convert("nTr mAat")` |
+The library deliberately separates **automatic detection**, **explicit MdC conversion**, **editorial profiles**, and **already-Unicode normalization** so callers can choose how much interpretation they want.
 
-For normal use:
+| API | Input type / mode | Profile | Example | Result |
+| --- | --- | --- | --- | --- |
+| `parse(text)` | Conservative automatic detection (`auto`) | implicit `default` | `parse("nTr mAat")` | `"nṯr mꜣꜥt"` |
+| `parse_mdc(text)` | Explicit Manuel de Codage transliteration (`mdc`) | `default` | `parse_mdc("nTr Htp xpr mAat")` | `"nṯr ḥtp ḫpr mꜣꜥt"` |
+| `parse_mdc_profiled(text, profile="default")` | Explicit MdC | `default` | `parse_mdc_profiled("jr qd", profile="default")` | `"jr qd"` |
+| `parse_mdc_profiled(text, profile="gardiner-1957")` | Explicit MdC | `gardiner-1957` | `parse_mdc_profiled("jr qd", profile="gardiner-1957")` | `"ꞽr ḳd"` |
+| `parse_mdc_profiled(text, profile="legacy-diacritics")` | Explicit MdC | compatibility alias | `parse_mdc_profiled("jr qd", profile="legacy-diacritics")` | `"ꞽr ḳd"` |
+| `normalize_unicode(text)` | Already-Unicode Egyptological text (`unicode`) | none | `normalize_unicode("ȝ ʿ ỉ")` | canonical Egyptological Unicode |
+| `analyze(text, mode=...)` | Diagnostic conversion | follows selected mode | `analyze("mAat", mode="mdc")` | structured result + detection/warnings |
+| `validate(text)` | Validation only | none | `validate("mAꜥt")` | raises on dangerous mixed encoding |
+
+`convert(text)` is an alias for the conservative `parse(text)` entry point.
+
+### Automatic conversion
+
+Use `parse()` when input may contain ordinary text mixed with transliteration and you do **not** want the library to guess aggressively:
 
 ```python
 from egypttranslit import parse
 
-result = parse("nTr mAat")
+assert parse("nTr mAat") == "nṯr mꜣꜥt"
+assert parse("A taxi on the X axis.") == "A taxi on the X axis."
 ```
 
-`parse()` is deliberately conservative. It converts only tokens that carry sufficiently distinctive MdC evidence and never assumes that neighbouring ASCII words are also MdC. Ambiguous input is preserved rather than guessed.
+`parse()` converts tokens only when the input contains sufficiently distinctive MdC evidence. Ambiguous ASCII is preserved rather than guessed.
 
-If the input is definitely MdC transliteration, use the explicit mode for complete conversion:
+### Explicit Manuel de Codage (MdC)
+
+Use `parse_mdc()` when the input is known to be MdC transliteration. This mode applies the full transliteration character mapping while preserving layout punctuation and protected sign identifiers:
 
 ```python
 from egypttranslit import parse_mdc
 
-result = parse_mdc("nTr Htp xpr m mAat")
+assert parse_mdc("nTr Htp xpr mAat") == "nṯr ḥtp ḫpr mꜣꜥt"
+assert parse_mdc("A1-nTr-D36-Htp-T3") == "A1-nṯr-D36-ḥtp-T3"
 ```
 
-For already-Unicode scholarly text:
+Typical MdC mappings include:
+
+| MdC | Unicode | MdC | Unicode |
+| --- | --- | --- | --- |
+| `A` | `ꜣ` | `a` | `ꜥ` |
+| `H` | `ḥ` | `x` | `ḫ` |
+| `X` | `ẖ` | `S` | `š` |
+| `T` | `ṯ` | `D` | `ḏ` |
+| `3` | `ꜣ` | | |
+
+Gardiner/JSesh sign identifiers such as `A1`, `D36` and `T3` are protected and are not mistaken for transliteration tokens.
+
+### Already-Unicode text
+
+Use `normalize_unicode()` when the source already contains scholarly Unicode and only canonical normalization / supported historical-form normalization is desired:
 
 ```python
 from egypttranslit import normalize_unicode
 
-result = normalize_unicode(text)
+result = normalize_unicode("ȝ ʿ ỉ")
 ```
 
 ## Explicit transliteration profiles
 
-The stable package-level `parse_mdc(text)` keeps editorial alternatives such as plain `j` and `q` unchanged. Applications that need a specific output convention can opt into the advanced profile-aware converter:
+The stable package-level `parse_mdc(text)` uses the `default` editorial behavior and intentionally preserves plain `j` and `q`. Applications that need a specific output convention can opt into `parse_mdc_profiled()`.
+
+| Profile | Intended use | Additional mapping | Notes |
+| --- | --- | --- | --- |
+| `default` | Conservative explicit MdC conversion | none for `j` / `q` | Preserves `j` and `q` because editorial conventions differ. |
+| `gardiner-1957` | Explicit Gardiner-style output | `j → ꞽ`, `q → ḳ` | Matches the Gardiner 1957 transliteration repertoire described by Unicode UAX #57. |
+| `legacy-diacritics` | Backward compatibility | same as `gardiner-1957` | Alias retained so existing callers do not break. |
+
+Example using the default profile:
 
 ```python
 from egypttranslit.converter import parse_mdc_profiled
 
-result = parse_mdc_profiled("jr qd mAat", profile="gardiner-1957")
-# "ꞽr ḳd mꜣꜥt"
+assert parse_mdc_profiled(
+    "jr qd nTr mAat",
+    profile="default",
+) == "jr qd nṯr mꜣꜥt"
 ```
 
-Available profiles are:
+The same MdC with the Gardiner 1957 profile:
 
-- `default`: preserves `j` and `q`.
-- `gardiner-1957`: renders `j → ꞽ` and `q → ḳ`, matching the transliteration repertoire described for the Gardiner 1957 convention in Unicode UAX #57.
-- `legacy-diacritics`: backward-compatible alias for `gardiner-1957`.
+```python
+from egypttranslit.converter import parse_mdc_profiled
+
+assert parse_mdc_profiled(
+    "jr qd nTr mAat",
+    profile="gardiner-1957",
+) == "ꞽr ḳd nṯr mꜣꜥt"
+```
+
+The `legacy-diacritics` alias produces the same output:
+
+```python
+assert parse_mdc_profiled(
+    "jr qd",
+    profile="legacy-diacritics",
+) == "ꞽr ḳd"
+```
 
 The profile definitions live in `egypttranslit/data/profiles.json` rather than being embedded in conversion logic, so mappings can be reviewed and extended independently. No single `ifao` profile is imposed because the IFAO explicitly documents alternatives such as `j` or `ỉ` and `q` or `ḳ`; choosing between those remains an explicit editorial decision.
 
-Applications can inspect profile metadata without reading package internals:
+Applications can inspect the available profiles programmatically:
 
 ```python
 from egypttranslit.profiles import get_profile_info, list_profile_info
@@ -109,21 +161,49 @@ validate("mAꜥt")  # raises ValueError: mixed ASCII/Unicode token
 
 `ConversionResult.detected` is one of `mdc`, `unicode`, `mixed`, `ambiguous` or `none`. `confidence` is a deterministic heuristic score describing the strength of the character evidence; it is **not** a statistical probability and should not be interpreted as philological certainty. Sign identifiers are excluded from this detection logic, and mixed ASCII/Unicode transliteration inside one token is reported explicitly.
 
+A practical ingestion workflow can therefore validate first and then convert explicitly:
+
+```python
+from egypttranslit.converter import parse_mdc_profiled
+from egypttranslit.diagnostics import validate
+
+source = "jr qd nTr mAat"
+validate(source)
+clean = parse_mdc_profiled(source, profile="gardiner-1957")
+assert clean == "ꞽr ḳd nṯr mꜣꜥt"
+```
+
 ## Command line
 
-Installation also provides the `egypttranslit` command. It uses the same conversion modes as the Python API:
+Installation also provides the `egypttranslit` command. CLI modes correspond directly to the Python workflows above:
+
+| CLI | Meaning |
+| --- | --- |
+| `egypttranslit TEXT` | conservative automatic conversion (`auto`) |
+| `egypttranslit --mode mdc TEXT` | explicit MdC conversion with `default` profile |
+| `egypttranslit --mode mdc --profile gardiner-1957 TEXT` | explicit MdC using Gardiner 1957 `j/q` output |
+| `egypttranslit --mode mdc --profile legacy-diacritics TEXT` | compatibility alias for Gardiner-style output |
+| `egypttranslit --mode unicode TEXT` | normalize already-Unicode scholarly text |
+
+Examples:
 
 ```bash
 egypttranslit "nTr mAat"
-egypttranslit --mode mdc "nTr Htp"
-egypttranslit --mode mdc --profile gardiner-1957 "jr qd"
+# nṯr mꜣꜥt
+
+egypttranslit --mode mdc "nTr Htp xpr mAat"
+# nṯr ḥtp ḫpr mꜣꜥt
+
+egypttranslit --mode mdc --profile gardiner-1957 "jr qd nTr"
+# ꞽr ḳd nṯr
+
 egypttranslit --mode unicode "ȝ ʿ ỉ"
 ```
 
 For files or pipelines, omit the text argument and send input through stdin; whitespace and line breaks are preserved:
 
 ```bash
-cat input.txt | egypttranslit --mode mdc > output.txt
+cat input.txt | egypttranslit --mode mdc --profile gardiner-1957 > output.txt
 ```
 
 The modes are `auto` (default), `mdc` and `unicode`. Non-default profiles are valid only with `--mode mdc`. `egypttranslit --version` prints the installed version.
@@ -142,7 +222,9 @@ Internal names beginning with `_` are implementation details and are not part of
 
 ## Release integrity
 
-Release artifacts are built and checked as both wheel and source distribution, installed in isolated environments, and exercised through both the Python API and the installed CLI. The release workflow requires a version tag matching project metadata and uses PyPI Trusted Publishing through GitHub OIDC rather than a stored long-lived PyPI token. A separate manual TestPyPI workflow is available for release rehearsals.
+Release artifacts are built and checked as both wheel and source distribution, installed in isolated environments, and exercised through both the Python API and the installed CLI. Production publishing uses PyPI Trusted Publishing through GitHub OIDC rather than a stored long-lived PyPI token. A separate manual TestPyPI workflow is available for release rehearsals.
+
+Production releases can be initiated from GitHub Actions after the version metadata has been prepared and merged to `main`; the release workflow validates the requested version against the project metadata, publishes to PyPI, and only then creates the matching GitHub tag/release.
 
 Publishing environments (`pypi` and `testpypi`) must be configured as Trusted Publishers on the corresponding package indexes before those workflows can upload a release.
 
