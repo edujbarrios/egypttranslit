@@ -98,4 +98,5 @@ def apply_profile(text: str, profile: TransliterationProfile) -> str:
     """Apply one explicit output profile to already-tokenized MdC text."""
     spec = _resolve_profile(profile)
     mapping = spec.get("mapping", {})
-    return text.translate(str.maketrans(mapping))
+    translation = str.maketrans(cast(dict[str, str | int | None], mapping))
+    return text.translate(translation)
