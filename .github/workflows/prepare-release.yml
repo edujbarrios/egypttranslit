@@ -1,0 +1,75 @@
+name: Prepare release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "New final version (X.Y.Z)"
+        required: true
+        type: string
+      notes:
+        description: "Markdown changelog entries, for example: - Added ..."
+        required: true
+        type: string
+
+concurrency:
+  group: prepare-release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: main
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.14"
+      - name: Require main branch dispatch
+        shell: bash
+        run: test "$GITHUB_REF" = "refs/heads/main"
+      - name: Prepare synchronized release metadata
+        env:
+          VERSION: ${{ inputs.version }}
+          RELEASE_NOTES: ${{ inputs.notes }}
+        run: python scripts/prepare_release.py "$VERSION" --notes "$RELEASE_NOTES"
+      - name: Validate prepared release metadata
+        run: |
+          python -m pip install -e .
+          python scripts/check_release.py
+      - name: Commit release preparation
+        id: commit
+        shell: bash
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          BRANCH="release/v${VERSION}"
+          git switch -c "$BRANCH"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pyproject.toml CITATION.cff CHANGELOG.md
+          git diff --cached --exit-code && {
+            echo "No release metadata changes were produced" >&2
+            exit 1
+          }
+          git commit -m "chore: prepare release ${VERSION}"
+          git push --set-upstream origin "$BRANCH"
+          echo "branch=${BRANCH}" >> "$GITHUB_OUTPUT"
+      - name: Open release pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+          BRANCH: ${{ steps.commit.outputs.branch }}
+        shell: bash
+        run: |
+          gh pr create \
+            --repo "$GITHUB_REPOSITORY" \
+            --base main \
+            --head "$BRANCH" \
+            --title "chore: prepare release ${VERSION}" \
+            --body "Prepares synchronized metadata and changelog for egypttranslit ${VERSION}. Merge only after Tests and Property checks are green. After merge, run the Release to PyPI workflow for version ${VERSION}."
