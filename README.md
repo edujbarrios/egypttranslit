@@ -8,7 +8,13 @@ It is intended for researchers, digital-humanities projects and small scripts th
 
 Requires Python 3.10 or newer.
 
-Clone the repository and install it locally:
+For a published release, install from PyPI:
+
+```bash
+python -m pip install egypttranslit
+```
+
+For development or unreleased changes, install from a local clone:
 
 ```bash
 git clone https://github.com/edujbarrios/egypttranslit.git
@@ -70,6 +76,21 @@ Available profiles are:
 
 The profile definitions live in `egypttranslit/data/profiles.json` rather than being embedded in conversion logic, so mappings can be reviewed and extended independently. No single `ifao` profile is imposed because the IFAO explicitly documents alternatives such as `j` or `ỉ` and `q` or `ḳ`; choosing between those remains an explicit editorial decision.
 
+Applications can inspect profile metadata without reading package internals:
+
+```python
+from egypttranslit.profiles import get_profile_info, list_profile_info
+
+info = get_profile_info("gardiner-1957")
+assert info.mapping == (("j", "ꞽ"), ("q", "ḳ"))
+assert info.alias_of is None
+
+available = tuple(profile.name for profile in list_profile_info())
+# ("default", "gardiner-1957", "legacy-diacritics")
+```
+
+`ProfileInfo` also exposes the human-readable description and documented source for a profile. Alias profiles retain their alias relationship while reporting the resolved mapping and source.
+
 ## Diagnostics and validation
 
 For ingestion pipelines, corpora and research tooling that need to inspect input before accepting a conversion, use the opt-in diagnostic API:
@@ -113,11 +134,17 @@ Unknown characters, punctuation and whitespace are preserved. Encoded Egyptian h
 
 The supported package-level API is intentionally small and consists of exactly `parse`, `parse_mdc`, `normalize_unicode` and `convert`. Each accepts one Python `str` and returns a plain `str`; non-string inputs raise `TypeError`. `__version__` exposes installed distribution metadata but is not a conversion function.
 
-Advanced opt-in helpers such as `egypttranslit.converter.parse_mdc_profiled` and `egypttranslit.diagnostics` are intentionally outside the package-level `__all__`, so the stable four-function conversion API remains backward compatible.
+Advanced opt-in helpers such as `egypttranslit.converter.parse_mdc_profiled`, `egypttranslit.profiles` and `egypttranslit.diagnostics` are intentionally outside the package-level `__all__`, so the stable four-function conversion API remains backward compatible.
 
 The library converts transliteration encodings; it is not a renderer or a general parser for the full Manuel de Codage hieroglyph-layout language. Gardiner/JSesh sign identifiers and encoded hieroglyph formatting remain opaque data. Automatic `parse()` is intentionally conservative and may leave ambiguous ASCII unchanged; callers that know an input is MdC should use `parse_mdc()` instead of relying on detection.
 
 Internal names beginning with `_` are implementation details and are not part of the supported API.
+
+## Release integrity
+
+Release artifacts are built and checked as both wheel and source distribution, installed in isolated environments, and exercised through both the Python API and the installed CLI. The release workflow requires a version tag matching project metadata and uses PyPI Trusted Publishing through GitHub OIDC rather than a stored long-lived PyPI token. A separate manual TestPyPI workflow is available for release rehearsals.
+
+Publishing environments (`pypi` and `testpypi`) must be configured as Trusted Publishers on the corresponding package indexes before those workflows can upload a release.
 
 ## Citation
 
