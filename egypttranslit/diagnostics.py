@@ -11,7 +11,7 @@ import re
 from dataclasses import dataclass
 from typing import Literal
 
-from .converter import normalize_unicode, parse, parse_mdc
+from .converter import normalize_unicode, parse, parse_mdc_profiled
 from .profiles import TransliterationProfile
 
 ConversionMode = Literal["auto", "mdc", "unicode"]
@@ -66,7 +66,7 @@ def analyze(
     if mode == "auto":
         converted = parse(text)
     elif mode == "mdc":
-        converted = parse_mdc(text, profile=profile)
+        converted = parse_mdc_profiled(text, profile=profile)
     elif mode == "unicode":
         converted = normalize_unicode(text)
     else:
