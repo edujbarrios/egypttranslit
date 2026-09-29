@@ -1,3 +1,4 @@
+import unicodedata
 import unittest
 
 from egypttranslit import normalize_unicode, parse, parse_mdc
@@ -44,11 +45,12 @@ class SymbolConversionContractTests(unittest.TestCase):
         self.assertEqual(parse_mdc(source), source)
         self.assertEqual(normalize_unicode(source), source)
 
-    def test_combining_marks_outside_verified_yod_sequences_are_preserved(self):
+    def test_unrelated_combining_marks_are_preserved_under_nfc(self):
         source = "n\u0301 r\u0323 m\u0304"
-        self.assertEqual(parse(source), source)
-        self.assertEqual(parse_mdc(source), source)
-        self.assertEqual(normalize_unicode(source), source)
+        expected = unicodedata.normalize("NFC", source)
+        self.assertEqual(parse(source), expected)
+        self.assertEqual(parse_mdc(source), expected)
+        self.assertEqual(normalize_unicode(source), expected)
 
     def test_unrelated_scripts_and_emoji_are_opaque(self):
         source = "Ελληνικά العربية 漢字 🐍📜"
