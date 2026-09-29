@@ -5,4 +5,4 @@ include NOTICE
 include CITATION.cff
 recursive-include egypttranslit py.typed
 recursive-include scripts *.py
-recursive-include tests *.py
+recursive-include tests *.py *.json

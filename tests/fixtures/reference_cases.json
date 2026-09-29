@@ -1,0 +1,12 @@
+[
+  {"mode": "mdc", "source": "nTr Htp xpr m mAat", "expected": "nṯr ḥtp ḫpr m mꜣꜥt"},
+  {"mode": "mdc", "source": "A a H x X S T D", "expected": "ꜣ ꜥ ḥ ḫ ẖ š ṯ ḏ"},
+  {"mode": "mdc", "source": "A1-nTr-D36-Htp-T3", "expected": "A1-nṯr-D36-ḥtp-T3"},
+  {"mode": "mdc", "source": "[mAat].nTr-Htp=sn <xpr>", "expected": "[mꜣꜥt].nṯr-ḥtp=sn <ḫpr>"},
+  {"mode": "auto", "source": "The word mAat is often discussed in Egyptology.", "expected": "The word mꜣꜥt is often discussed in Egyptology."},
+  {"mode": "auto", "source": "A taxi may contain Htp as plain text.", "expected": "A taxi may contain Htp as plain text."},
+  {"mode": "auto", "source": "n3 data", "expected": "nꜣ data"},
+  {"mode": "unicode", "source": "ȝ ʿ ỉ", "expected": "ꜣ ꜥ ꞽ"},
+  {"mode": "unicode", "source": "ḥ", "expected": "ḥ"},
+  {"mode": "mdc-legacy", "source": "jr qd mAat", "expected": "ꞽr ḳd mꜣꜥt"}
+]
