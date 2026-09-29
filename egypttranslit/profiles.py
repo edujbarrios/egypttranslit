@@ -14,7 +14,7 @@ TransliterationProfile = Literal[
 
 
 class _ProfileSpec(TypedDict, total=False):
-    mapping: dict[str, str]
+    mapping: dict[str | int, str | int | None]
     alias: str
     description: str
     source: str
