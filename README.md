@@ -70,6 +70,24 @@ Available profiles are:
 
 The profile definitions live in `egypttranslit/data/profiles.json` rather than being embedded in conversion logic, so mappings can be reviewed and extended independently. No single `ifao` profile is imposed because the IFAO explicitly documents alternatives such as `j` or `ỉ` and `q` or `ḳ`; choosing between those remains an explicit editorial decision.
 
+## Diagnostics and validation
+
+For ingestion pipelines, corpora and research tooling that need to inspect input before accepting a conversion, use the opt-in diagnostic API:
+
+```python
+from egypttranslit.diagnostics import analyze, validate
+
+result = analyze("mAat", mode="mdc")
+assert result.text == "mꜣꜥt"
+assert result.detected == "mdc"
+assert result.confidence == 0.9
+assert result.warnings == ()
+
+validate("mAꜥt")  # raises ValueError: mixed ASCII/Unicode token
+```
+
+`ConversionResult.detected` is one of `mdc`, `unicode`, `mixed`, `ambiguous` or `none`. `confidence` is a deterministic heuristic score describing the strength of the character evidence; it is **not** a statistical probability and should not be interpreted as philological certainty. Sign identifiers are excluded from this detection logic, and mixed ASCII/Unicode transliteration inside one token is reported explicitly.
+
 ## Command line
 
 Installation also provides the `egypttranslit` command. It uses the same conversion modes as the Python API:
