@@ -1,6 +1,6 @@
 # egypttranslit
 
-[![PyPI version](https://img.shields.io/pypi/v/egypttranslit.svg)](https://pypi.org/project/egypttranslit/)
+[![PyPI](https://img.shields.io/pypi/v/egypttranslit?style=flat-square&logo=pypi&logoColor=white&label=PyPI&color=3775A9)](https://pypi.org/project/egypttranslit/)
 
 A small Python library for converting Egyptological transliteration into clean Unicode.
 
