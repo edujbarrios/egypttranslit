@@ -43,12 +43,17 @@ def _validate_release_workflow(workflow: str) -> None:
     if '      - "v*"' not in workflow:
         raise SystemExit("release workflow must retain version-tag publishing")
     if "workflow_dispatch:" not in workflow or "version:" not in workflow:
-        raise SystemExit("release workflow must expose an explicit manual version input")
+        raise SystemExit(
+            "release workflow must expose an explicit manual version input"
+        )
     if 'test "$GITHUB_REF" = "refs/heads/main"' not in workflow:
         raise SystemExit("manual PyPI releases must be restricted to main")
     if 'test "$REQUESTED_VERSION" = "$VERSION"' not in workflow:
         raise SystemExit("manual releases must match the prepared project version")
-    if "group: pypi-release" not in workflow or "cancel-in-progress: false" not in workflow:
+    if (
+        "group: pypi-release" not in workflow
+        or "cancel-in-progress: false" not in workflow
+    ):
         raise SystemExit("release workflow must serialize production releases")
     if "name: pypi" not in workflow:
         raise SystemExit("release workflow must use the protected pypi environment")
@@ -64,7 +69,10 @@ def _validate_release_workflow(workflow: str) -> None:
         raise SystemExit(
             "release artifact upload must fail when distributions are missing"
         )
-    if "Create GitHub release and tag" not in workflow or "contents: write" not in workflow:
+    if (
+        "Create GitHub release and tag" not in workflow
+        or "contents: write" not in workflow
+    ):
         raise SystemExit("successful PyPI publication must create a GitHub release/tag")
 
     action_refs = re.findall(r"^\s*uses:\s*[^@\s]+@([^\s#]+)", workflow, re.MULTILINE)
