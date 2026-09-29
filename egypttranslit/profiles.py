@@ -51,7 +51,9 @@ def _resolve_profile(profile: TransliterationProfile) -> _ProfileSpec:
     try:
         return _PROFILE_SPECS[alias]
     except KeyError as exc:  # pragma: no cover - package data integrity guard
-        raise RuntimeError(f"profile {profile!r} refers to unknown alias {alias!r}") from exc
+        raise RuntimeError(
+            f"profile {profile!r} refers to unknown alias {alias!r}"
+        ) from exc
 
 
 def apply_profile(text: str, profile: TransliterationProfile) -> str:
