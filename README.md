@@ -81,15 +81,9 @@ Internal names beginning with `_` are implementation details and are not part of
 
 ## Citation
 
-`CITATION.cff` is the single source of citation metadata for this project.
+Citation metadata is provided in `CITATION.cff`.
 
-On GitHub, choose **Cite this repository → BibTeX**, copy the generated entry into your `.bib` file, and cite the key from that entry in LaTeX:
-
-```latex
-\cite{<bibtex-key>}
-```
-
-Keeping the bibliographic metadata only in `CITATION.cff` avoids duplicated author, ORCID and version information in the README.
+> Barrios, E. J. *egypttranslit* [Computer software]. https://github.com/edujbarrios/egypttranslit
 
 ## References
 
