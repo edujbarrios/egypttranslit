@@ -18,6 +18,7 @@ ConversionMode = Literal["auto", "mdc", "unicode"]
 DetectedInput = Literal["mdc", "unicode", "mixed", "ambiguous", "none"]
 
 _ASCII_TRANSLITERATION = frozenset("AaiyjwybpfmnrhHxXzsSqkgtTdD3")
+_ASCII_ENCODING_MARKERS = frozenset("AaHxXSTD3jq")
 _UNICODE_TRANSLITERATION = frozenset("ꜢꜣꜤꜥȜȝʿḤḥḪḫẖŠšṮṯḎḏỈỉḲḳꞼꞽ")
 _STRONG_MDC_MARKERS = frozenset("AHXSTD3")
 _TOKEN_RE = re.compile(r"[A-Za-z0-9ꜢꜣꜤꜥȜȝʿḤḥḪḫẖŠšṮṯḎḏỈỉḲḳꞼꞽ]+")
@@ -54,9 +55,11 @@ def _mixed_encoding_warnings(text: str) -> tuple[str, ...]:
         token = match.group(0)
         if _SIGN_CODE_RE.fullmatch(token):
             continue
-        has_ascii = any(character in _ASCII_TRANSLITERATION for character in token)
+        has_ascii_marker = any(
+            character in _ASCII_ENCODING_MARKERS for character in token
+        )
         has_unicode = any(character in _UNICODE_TRANSLITERATION for character in token)
-        if has_ascii and has_unicode:
+        if has_ascii_marker and has_unicode:
             warnings.append(
                 f"mixed ASCII/Unicode transliteration token {token!r} "
                 f"at offset {match.start()}"
