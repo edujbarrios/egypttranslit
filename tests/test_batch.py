@@ -23,9 +23,7 @@ class BatchConversionTests(unittest.TestCase):
 
     def test_profiled_batch_uses_one_profile(self):
         self.assertEqual(
-            parse_mdc_profiled_many(
-                ["jr qd", "nTr mAat"], profile="gardiner-1957"
-            ),
+            parse_mdc_profiled_many(["jr qd", "nTr mAat"], profile="gardiner-1957"),
             ("ꞽr ḳd", "nṯr mꜣꜥt"),
         )
 
