@@ -10,6 +10,10 @@ from __future__ import annotations
 from typing import Final, Literal
 
 TransliterationProfile = Literal["default", "legacy-diacritics"]
+TRANSLITERATION_PROFILES: Final[tuple[TransliterationProfile, ...]] = (
+    "default",
+    "legacy-diacritics",
+)
 
 _PROFILES: Final[dict[TransliterationProfile, dict[int, str]]] = {
     "default": {},
@@ -22,7 +26,7 @@ def apply_profile(text: str, profile: TransliterationProfile) -> str:
     try:
         table = _PROFILES[profile]
     except KeyError as exc:
-        supported = ", ".join(sorted(_PROFILES))
+        supported = ", ".join(TRANSLITERATION_PROFILES)
         message = (
             f"unknown transliteration profile {profile!r}; "
             f"expected one of: {supported}"
