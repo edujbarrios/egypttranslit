@@ -9,11 +9,30 @@ class DiagnosticTests(unittest.TestCase):
         self.assertIsInstance(result, ConversionResult)
         self.assertEqual(result.text, "mꜣꜥt")
         self.assertTrue(result.changed)
+        self.assertEqual(result.detected, "mdc")
+        self.assertEqual(result.confidence, 0.9)
         self.assertEqual(result.warnings, ())
+
+    def test_analyze_reports_unicode_input(self):
+        result = analyze("nṯr mꜣꜥt", mode="unicode")
+        self.assertEqual(result.detected, "unicode")
+        self.assertEqual(result.confidence, 1.0)
+
+    def test_analyze_reports_ambiguous_plain_ascii(self):
+        result = analyze("maat", mode="auto")
+        self.assertEqual(result.detected, "ambiguous")
+        self.assertEqual(result.confidence, 0.0)
+
+    def test_analyze_reports_non_transliteration_input(self):
+        result = analyze("☀️ — 𓀀", mode="auto")
+        self.assertEqual(result.detected, "none")
+        self.assertEqual(result.confidence, 1.0)
 
     def test_analyze_reports_mixed_encoding_token(self):
         result = analyze("mAꜥt", mode="mdc")
         self.assertEqual(result.text, "mꜣꜥt")
+        self.assertEqual(result.detected, "mixed")
+        self.assertEqual(result.confidence, 1.0)
         self.assertEqual(len(result.warnings), 1)
         self.assertIn("mixed ASCII/Unicode", result.warnings[0])
 
@@ -27,8 +46,13 @@ class DiagnosticTests(unittest.TestCase):
         self.assertEqual(result.warnings, ())
 
     def test_sign_codes_are_not_reported_as_mixed(self):
-        result = analyze("A1q D36j", mode="mdc", profile="legacy-diacritics")
+        result = analyze("A1q D36j", mode="mdc", profile="gardiner-1957")
         self.assertEqual(result.warnings, ())
+
+    def test_confidence_is_documented_heuristic_not_mode_assertion(self):
+        result = analyze("ordinary", mode="mdc")
+        self.assertEqual(result.detected, "ambiguous")
+        self.assertEqual(result.confidence, 0.0)
 
     def test_unknown_mode_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "unknown conversion mode"):
