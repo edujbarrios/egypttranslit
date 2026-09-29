@@ -1,0 +1,18 @@
+{
+  "default": {
+    "description": "Preserve editorial alternatives such as j and q.",
+    "mapping": {}
+  },
+  "gardiner-1957": {
+    "description": "Unicode/UAX #57 Gardiner 1957 transliteration output for ambiguous ASCII alternatives.",
+    "mapping": {
+      "j": "ꞽ",
+      "q": "ḳ"
+    },
+    "source": "Unicode UAX #57 revision 7, kEH_FVal transliteration convention"
+  },
+  "legacy-diacritics": {
+    "alias": "gardiner-1957",
+    "description": "Backward-compatible alias for the previous fully-diacritic profile."
+  }
+}

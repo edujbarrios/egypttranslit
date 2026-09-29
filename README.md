@@ -51,6 +51,25 @@ from egypttranslit import normalize_unicode
 result = normalize_unicode(text)
 ```
 
+## Explicit transliteration profiles
+
+The stable package-level `parse_mdc(text)` keeps editorial alternatives such as plain `j` and `q` unchanged. Applications that need a specific output convention can opt into the advanced profile-aware converter:
+
+```python
+from egypttranslit.converter import parse_mdc_profiled
+
+result = parse_mdc_profiled("jr qd mAat", profile="gardiner-1957")
+# "ꞽr ḳd mꜣꜥt"
+```
+
+Available profiles are:
+
+- `default`: preserves `j` and `q`.
+- `gardiner-1957`: renders `j → ꞽ` and `q → ḳ`, matching the transliteration repertoire described for the Gardiner 1957 convention in Unicode UAX #57.
+- `legacy-diacritics`: backward-compatible alias for `gardiner-1957`.
+
+The profile definitions live in `egypttranslit/data/profiles.json` rather than being embedded in conversion logic, so mappings can be reviewed and extended independently. No single `ifao` profile is imposed because the IFAO explicitly documents alternatives such as `j` or `ỉ` and `q` or `ḳ`; choosing between those remains an explicit editorial decision.
+
 ## Command line
 
 Installation also provides the `egypttranslit` command. It uses the same conversion modes as the Python API:
@@ -58,6 +77,7 @@ Installation also provides the `egypttranslit` command. It uses the same convers
 ```bash
 egypttranslit "nTr mAat"
 egypttranslit --mode mdc "nTr Htp"
+egypttranslit --mode mdc --profile gardiner-1957 "jr qd"
 egypttranslit --mode unicode "ȝ ʿ ỉ"
 ```
 
@@ -67,13 +87,15 @@ For files or pipelines, omit the text argument and send input through stdin; whi
 cat input.txt | egypttranslit --mode mdc > output.txt
 ```
 
-The modes are `auto` (default), `mdc` and `unicode`. `egypttranslit --version` prints the installed version.
+The modes are `auto` (default), `mdc` and `unicode`. Non-default profiles are valid only with `--mode mdc`. `egypttranslit --version` prints the installed version.
 
 Unknown characters, punctuation and whitespace are preserved. Encoded Egyptian hieroglyphs are treated as opaque Unicode data: the original Egyptian Hieroglyphs block, Egyptian Hieroglyph Format Controls (including joiners, segment delimiters, mirror/damage controls and variation sequences), and Egyptian Hieroglyphs Extended-A are never interpreted as transliteration. Gardiner/JSesh sign identifiers such as `A1`, `D36` and `T3` are also preserved rather than interpreted as transliteration. Editorial alternatives such as `j` versus Egyptological yod and `q` versus `ḳ` are not guessed automatically.
 
 ## Supported API and scope
 
 The supported package-level API is intentionally small and consists of exactly `parse`, `parse_mdc`, `normalize_unicode` and `convert`. Each accepts one Python `str` and returns a plain `str`; non-string inputs raise `TypeError`. `__version__` exposes installed distribution metadata but is not a conversion function.
+
+Advanced opt-in helpers such as `egypttranslit.converter.parse_mdc_profiled` and `egypttranslit.diagnostics` are intentionally outside the package-level `__all__`, so the stable four-function conversion API remains backward compatible.
 
 The library converts transliteration encodings; it is not a renderer or a general parser for the full Manuel de Codage hieroglyph-layout language. Gardiner/JSesh sign identifiers and encoded hieroglyph formatting remain opaque data. Automatic `parse()` is intentionally conservative and may leave ambiguous ASCII unchanged; callers that know an input is MdC should use `parse_mdc()` instead of relying on detection.
 

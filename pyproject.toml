@@ -42,4 +42,4 @@ Changelog = "https://github.com/edujbarrios/egypttranslit/blob/main/CHANGELOG.md
 packages = ["egypttranslit"]
 
 [tool.setuptools.package-data]
-egypttranslit = ["py.typed"]
+egypttranslit = ["py.typed", "data/*.json"]
