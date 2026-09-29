@@ -25,7 +25,6 @@ _REQUIRED_SDIST_FILES = {
     "MANIFEST.in",
     "NOTICE",
     "README.md",
-    "RELEASING.md",
     "pyproject.toml",
     "egypttranslit/__init__.py",
     "egypttranslit/__main__.py",
