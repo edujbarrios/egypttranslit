@@ -65,7 +65,7 @@ Gardiner/JSesh sign identifiers such as `A1`, `D36` and `T3` are preserved.
 
 ### Batch conversion
 
-Use the advanced batch helpers when each transliteration is a separate record. They preserve input order and return a tuple. Lists, tuples and generators are accepted.
+Use the batch helpers when each transliteration is a separate record. They preserve input order and return a tuple. Lists, tuples and generators are accepted.
 
 ```python
 from egypttranslit.batch import parse_mdc_many, parse_mdc_profiled_many
@@ -88,7 +88,7 @@ assert parse_mdc_profiled_many(
 )
 ```
 
-`parse_many()` and `normalize_unicode_many()` provide the same batch behavior for conservative automatic parsing and Unicode normalization. A single string is rejected deliberately so it cannot be mistaken for an iterable of individual transliterations.
+`parse_many()` and `normalize_unicode_many()` provide the same batch behavior for conservative automatic parsing and Unicode normalization.
 
 ## Profiles
 
@@ -166,12 +166,6 @@ cat input.txt | egypttranslit --mode mdc --profile gardiner-1957 > output.txt
 ```
 
 Modes are `auto` (default), `mdc` and `unicode`. Non-default profiles are valid only with `--mode mdc`.
-
-## Scope
-
-The stable package-level API is `parse`, `parse_mdc`, `normalize_unicode` and `convert`. Advanced helpers live in `egypttranslit.converter`, `egypttranslit.batch`, `egypttranslit.profiles` and `egypttranslit.diagnostics`.
-
-The library converts transliteration encodings; it is not a renderer or full parser for the Manuel de Codage hieroglyph-layout language. Unknown characters, punctuation, whitespace, encoded hieroglyphs and protected sign identifiers are preserved.
 
 ## Citation
 
