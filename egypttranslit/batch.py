@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable, Iterable
 
 from .converter import normalize_unicode, parse, parse_mdc, parse_mdc_profiled
-from .profiles import TransliterationProfile
+from .profiles import TransliterationProfile, get_profile_info
 
 
 def _convert_many(
@@ -32,6 +32,10 @@ def parse_mdc_profiled_many(
     """Convert multiple MdC transliterations using one editorial profile."""
     if isinstance(texts, (str, bytes)):
         raise TypeError("texts must be an iterable of strings, not a single string")
+    # Validate the profile even when the iterable is empty. This mirrors the
+    # single-string profiled converter and prevents invalid configuration from
+    # being silently accepted just because a batch currently has no records.
+    get_profile_info(profile)
     return tuple(parse_mdc_profiled(text, profile=profile) for text in texts)
 
 
