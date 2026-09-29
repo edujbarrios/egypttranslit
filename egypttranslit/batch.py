@@ -2,16 +2,18 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 
 from .converter import normalize_unicode, parse, parse_mdc, parse_mdc_profiled
 from .profiles import TransliterationProfile
 
 
-def _convert_many(texts: Iterable[str], converter: object) -> tuple[str, ...]:
+def _convert_many(
+    texts: Iterable[str], converter: Callable[[str], str]
+) -> tuple[str, ...]:
     if isinstance(texts, (str, bytes)):
         raise TypeError("texts must be an iterable of strings, not a single string")
-    return tuple(converter(text) for text in texts)  # type: ignore[operator]
+    return tuple(converter(text) for text in texts)
 
 
 def parse_many(texts: Iterable[str]) -> tuple[str, ...]:
