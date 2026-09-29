@@ -1,8 +1,8 @@
 """Diagnostics for transliteration conversion.
 
-The conversion API intentionally preserves ambiguous data.  This module adds
-an opt-in inspection layer for applications that want to reject suspicious
-mixed-encoding tokens before accepting converted output.
+The conversion API intentionally preserves ambiguous data. This module adds an
+opt-in inspection layer for applications that want machine-readable evidence
+about the input before accepting converted output.
 """
 
 from __future__ import annotations
@@ -15,9 +15,11 @@ from .converter import normalize_unicode, parse, parse_mdc_profiled
 from .profiles import TransliterationProfile
 
 ConversionMode = Literal["auto", "mdc", "unicode"]
+DetectedInput = Literal["mdc", "unicode", "mixed", "ambiguous", "none"]
 
 _ASCII_TRANSLITERATION = frozenset("AaiyjwybpfmnrhHxXzsSqkgtTdD3")
 _UNICODE_TRANSLITERATION = frozenset("ꜢꜣꜤꜥȜȝʿḤḥḪḫẖŠšṮṯḎḏỈỉḲḳꞼꞽ")
+_STRONG_MDC_MARKERS = frozenset("AHXSTD3")
 _TOKEN_RE = re.compile(r"[A-Za-z0-9ꜢꜣꜤꜥȜȝʿḤḥḪḫẖŠšṮṯḎḏỈỉḲḳꞼꞽ]+")
 _SIGN_CODE_RE = re.compile(
     r"(?:"
@@ -31,12 +33,18 @@ _SIGN_CODE_RE = re.compile(
 
 @dataclass(frozen=True, slots=True)
 class ConversionResult:
-    """Converted text plus machine-readable diagnostic information."""
+    """Converted text plus machine-readable diagnostic information.
+
+    ``confidence`` is a deterministic heuristic score describing how strongly
+    the characters support ``detected``. It is not a statistical probability.
+    """
 
     source: str
     text: str
     mode: ConversionMode
     changed: bool
+    detected: DetectedInput
+    confidence: float
     warnings: tuple[str, ...]
 
 
@@ -56,13 +64,52 @@ def _mixed_encoding_warnings(text: str) -> tuple[str, ...]:
     return tuple(warnings)
 
 
+def _detect_input(text: str, warnings: tuple[str, ...]) -> tuple[DetectedInput, float]:
+    if warnings:
+        return "mixed", 1.0
+
+    tokens = [
+        match.group(0)
+        for match in _TOKEN_RE.finditer(text)
+        if not _SIGN_CODE_RE.fullmatch(match.group(0))
+    ]
+    if not tokens:
+        return "none", 1.0
+
+    has_unicode = any(
+        character in _UNICODE_TRANSLITERATION
+        for token in tokens
+        for character in token
+    )
+    has_ascii = any(
+        character in _ASCII_TRANSLITERATION
+        for token in tokens
+        for character in token
+    )
+    has_strong_mdc = any(
+        character in _STRONG_MDC_MARKERS
+        for token in tokens
+        for character in token[1:]
+    )
+
+    if has_unicode and not has_ascii:
+        return "unicode", 1.0
+    if has_unicode and has_ascii:
+        return "mixed", 0.9
+    if has_strong_mdc:
+        return "mdc", 0.9
+    if has_ascii:
+        return "ambiguous", 0.0
+    return "none", 1.0
+
+
 def analyze(
     text: str,
     *,
     mode: ConversionMode = "auto",
     profile: TransliterationProfile = "default",
 ) -> ConversionResult:
-    """Convert *text* and return diagnostics without rejecting suspicious data."""
+    """Convert *text* and return deterministic, non-probabilistic diagnostics."""
     if mode == "auto":
         converted = parse(text)
     elif mode == "mdc":
@@ -73,11 +120,14 @@ def analyze(
         raise ValueError(f"unknown conversion mode {mode!r}")
 
     warnings = _mixed_encoding_warnings(text)
+    detected, confidence = _detect_input(text, warnings)
     return ConversionResult(
         source=text,
         text=converted,
         mode=mode,
         changed=converted != text,
+        detected=detected,
+        confidence=confidence,
         warnings=warnings,
     )
 
