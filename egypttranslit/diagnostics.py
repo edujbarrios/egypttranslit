@@ -11,7 +11,7 @@ import re
 from dataclasses import dataclass
 from typing import Literal
 
-from .converter import normalize_unicode, parse, parse_mdc_profiled
+from .converter import _UPPERCASE_XH, normalize_unicode, parse, parse_mdc_profiled
 from .profiles import TransliterationProfile
 
 ConversionMode = Literal["auto", "mdc", "unicode"]
@@ -21,7 +21,9 @@ _ASCII_TRANSLITERATION = frozenset("AaiyjwybpfmnrhHxXzsSqkgtTdD3")
 _ASCII_ENCODING_MARKERS = frozenset("AaHxXSTD3jq")
 _UNICODE_TRANSLITERATION = frozenset("ꜢꜣꜤꜥȜȝʿḤḥḪḫẖŠšṮṯḎḏỈỉḲḳꞼꞽ")
 _STRONG_MDC_MARKERS = frozenset("AHXSTD3")
-_TOKEN_RE = re.compile(r"[A-Za-z0-9ꜢꜣꜤꜥȜȝʿḤḥḪḫẖŠšṮṯḎḏỈỉḲḳꞼꞽ]+")
+_TOKEN_RE = re.compile(
+    re.escape(_UPPERCASE_XH) + r"|[A-Za-z0-9ꜢꜣꜤꜥȜȝʿḤḥḪḫẖŠšṮṯḎḏỈỉḲḳꞼꞽ]+"
+)
 _SIGN_CODE_RE = re.compile(
     r"(?:"
     r"(?:[A-IK-Z]|AA)\d{1,3}[A-Za-z]{0,2}"
@@ -53,7 +55,7 @@ def _mixed_encoding_warnings(text: str) -> tuple[str, ...]:
     warnings: list[str] = []
     for match in _TOKEN_RE.finditer(text):
         token = match.group(0)
-        if _SIGN_CODE_RE.fullmatch(token):
+        if _SIGN_CODE_RE.fullmatch(token) or token == _UPPERCASE_XH:
             continue
         has_ascii_marker = any(
             character in _ASCII_ENCODING_MARKERS for character in token
@@ -80,13 +82,19 @@ def _detect_input(text: str, warnings: tuple[str, ...]) -> tuple[DetectedInput, 
         return "none", 1.0
 
     has_unicode = any(
-        character in _UNICODE_TRANSLITERATION for token in tokens for character in token
+        token == _UPPERCASE_XH
+        or any(character in _UNICODE_TRANSLITERATION for character in token)
+        for token in tokens
     )
     has_ascii = any(
-        character in _ASCII_TRANSLITERATION for token in tokens for character in token
+        token != _UPPERCASE_XH
+        and any(character in _ASCII_TRANSLITERATION for character in token)
+        for token in tokens
     )
     has_strong_mdc = any(
-        character in _STRONG_MDC_MARKERS for token in tokens for character in token[1:]
+        token != _UPPERCASE_XH
+        and any(character in _STRONG_MDC_MARKERS for character in token[1:])
+        for token in tokens
     )
 
     if has_unicode:
