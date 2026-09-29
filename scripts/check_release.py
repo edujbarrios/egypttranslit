@@ -1,4 +1,4 @@
-"""Fail fast when release metadata drifts out of sync."""
+"""Fail fast when release metadata or publishing safety drifts out of sync."""
 
 import importlib.metadata
 import re
@@ -39,11 +39,46 @@ def _valid_orcid(identifier: str) -> bool:
     return compact[-1] == expected
 
 
+def _validate_release_workflow(workflow: str) -> None:
+    if '      - "v*"' not in workflow:
+        raise SystemExit("release workflow must be restricted to version tags")
+    if "workflow_dispatch" in workflow:
+        raise SystemExit(
+            "PyPI release workflow must not allow manual untagged publishing"
+        )
+    if "name: pypi" not in workflow:
+        raise SystemExit("release workflow must use the protected pypi environment")
+    if workflow.count("id-token: write") != 1:
+        raise SystemExit(
+            "OIDC write permission must appear exactly once in release workflow"
+        )
+    if "username:" in workflow or "password:" in workflow or "PYPI_TOKEN" in workflow:
+        raise SystemExit(
+            "release workflow must use Trusted Publishing without static tokens"
+        )
+    if "Require tag to match project version" not in workflow:
+        raise SystemExit("release workflow must verify tag/version equality")
+    if "if-no-files-found: error" not in workflow:
+        raise SystemExit(
+            "release artifact upload must fail when distributions are missing"
+        )
+
+    action_refs = re.findall(r"^\s*uses:\s*[^@\s]+@([^\s#]+)", workflow, re.MULTILINE)
+    if not action_refs:
+        raise SystemExit("release workflow contains no pinned actions")
+    unpinned = [
+        ref for ref in action_refs if re.fullmatch(r"[0-9a-f]{40}", ref) is None
+    ]
+    if unpinned:
+        raise SystemExit(f"release workflow contains unpinned action refs: {unpinned}")
+
+
 def main() -> None:
     pyproject = _read("pyproject.toml")
     citation = _read("CITATION.cff")
     changelog = _read("CHANGELOG.md")
     readme = _read("README.md")
+    release_workflow = _read(".github/workflows/release.yml")
     _read("LICENSE")
     _read("NOTICE")
 
@@ -102,9 +137,11 @@ def main() -> None:
             "README.md duplicates BibTeX; keep citation metadata in CITATION.cff"
         )
 
+    _validate_release_workflow(release_workflow)
+
     print(
         f"release metadata OK: {PACKAGE} {project_version}; "
-        f"build backend {build_requirement}; ORCID checksum OK"
+        f"build backend {build_requirement}; ORCID checksum and workflow safety OK"
     )
 
 
