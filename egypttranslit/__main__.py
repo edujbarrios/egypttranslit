@@ -7,10 +7,10 @@ import sys
 from collections.abc import Callable, Sequence
 
 from . import __version__, normalize_unicode, parse, parse_mdc
+from .profiles import TRANSLITERATION_PROFILES
 
 _CONVERTERS: dict[str, Callable[[str], str]] = {
     "auto": parse,
-    "mdc": parse_mdc,
     "unicode": normalize_unicode,
 }
 
@@ -44,9 +44,15 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "-m",
         "--mode",
-        choices=tuple(_CONVERTERS),
+        choices=("auto", "mdc", "unicode"),
         default="auto",
         help="conversion mode (default: auto)",
+    )
+    parser.add_argument(
+        "--profile",
+        choices=TRANSLITERATION_PROFILES,
+        default="default",
+        help="MdC output profile (only valid with --mode mdc)",
     )
     parser.add_argument(
         "--version",
@@ -59,11 +65,17 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     """Run the command-line interface and return a process exit code."""
     _configure_utf8_stdio()
-    args = _build_parser().parse_args(argv)
+    parser = _build_parser()
+    args = parser.parse_args(argv)
+    if args.profile != "default" and args.mode != "mdc":
+        parser.error("--profile requires --mode mdc")
 
     try:
         source = " ".join(args.text) if args.text else sys.stdin.read()
-        output = _CONVERTERS[args.mode](source)
+        if args.mode == "mdc":
+            output = parse_mdc(source, profile=args.profile)
+        else:
+            output = _CONVERTERS[args.mode](source)
         sys.stdout.write(output)
         sys.stdout.flush()
     except BrokenPipeError:
