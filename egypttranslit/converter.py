@@ -5,6 +5,8 @@ from __future__ import annotations
 import re
 import unicodedata
 
+from .profiles import TransliterationProfile, apply_profile
+
 # Manuel de Codage ASCII shortcuts that have a clear Unicode equivalent.
 _MDC_TRANSLATION = str.maketrans(
     {
@@ -45,8 +47,9 @@ _LEGACY_YOD_MARKS = frozenset(("\u0313", "\u0357", "\u0486"))
 # shortcut when the caller supplies valid uppercase scholarly Unicode.
 _UPPERCASE_XH = "H\u0331"
 
-# Plain j and q are accepted but intentionally not rewritten. IFAO documents
-# j/ỉ and q/ḳ as legitimate editorial alternatives, not encoding errors.
+# Plain j and q are accepted but intentionally not rewritten by default.
+# Callers that explicitly need a legacy fully-diacritic representation may
+# request profile="legacy-diacritics" from parse_mdc().
 _MDC_ASCII = frozenset("AaiyjwybpfmnrhHxXzsSqkgtTdD3")
 _UNICODE_TRANSLITERATION = frozenset("ꜢꜣꜤꜥȜȝʿḤḥḪḫẖŠšṮṯḎḏỈỉḲḳꞼꞽ")
 _ALLOWED_TOKEN = _MDC_ASCII | _UNICODE_TRANSLITERATION
@@ -178,10 +181,13 @@ def _has_explicit_mdc_signal(token: str) -> bool:
     )
 
 
-def _canonicalize_mdc_token(token: str) -> str:
+def _canonicalize_mdc_token(
+    token: str, *, profile: TransliterationProfile = "default"
+) -> str:
     if token == _UPPERCASE_XH or _is_sign_code(token) or _is_numeric_run(token):
         return token
-    return token.translate(_UNICODE_CANONICAL_TRANSLATION).translate(_MDC_TRANSLATION)
+    canonical = token.translate(_UNICODE_CANONICAL_TRANSLATION).translate(_MDC_TRANSLATION)
+    return apply_profile(canonical, profile)
 
 
 def parse(text: str) -> str:
@@ -205,19 +211,27 @@ def parse(text: str) -> str:
     return unicodedata.normalize("NFC", _TOKEN_RE.sub(replace, prepared))
 
 
-def parse_mdc(text: str) -> str:
+def parse_mdc(
+    text: str, *, profile: TransliterationProfile = "default"
+) -> str:
     """Convert known MdC transliteration shortcuts while preserving structure.
 
     This explicit mode assumes that the caller intentionally supplied MdC
     transliteration. Known shortcuts are converted even when unknown
     characters occur nearby. Multi-digit numbers, Gardiner/JSesh sign codes,
-    unknown characters, punctuation and layout are preserved. Editorial
-    alternatives such as ``j``/``ỉ`` and ``q``/``ḳ`` are not guessed.
+    unknown characters, punctuation and layout are preserved.
+
+    The default profile preserves editorial alternatives such as ``j`` and
+    ``q``. ``profile="legacy-diacritics"`` additionally renders ``j`` as
+    Egyptological yod ``ꞽ`` and ``q`` as ``ḳ``. The profile is deliberately
+    explicit so the library never guesses an editorial convention.
     """
     prepared = _prepare_text(text)
+    # Validate the profile even for empty/punctuation-only input.
+    apply_profile("", profile)
 
     def replace(match: re.Match[str]) -> str:
-        return _canonicalize_mdc_token(match.group(0))
+        return _canonicalize_mdc_token(match.group(0), profile=profile)
 
     return unicodedata.normalize("NFC", _TOKEN_RE.sub(replace, prepared))
 
