@@ -18,6 +18,13 @@ class DiagnosticTests(unittest.TestCase):
         self.assertEqual(result.detected, "unicode")
         self.assertEqual(result.confidence, 1.0)
 
+    def test_analyze_reports_uppercase_xh_as_unicode(self):
+        result = analyze("H\u0331", mode="unicode")
+        self.assertEqual(result.text, "H\u0331")
+        self.assertEqual(result.detected, "unicode")
+        self.assertEqual(result.confidence, 1.0)
+        self.assertEqual(result.warnings, ())
+
     def test_analyze_reports_ambiguous_plain_ascii(self):
         result = analyze("maat", mode="auto")
         self.assertEqual(result.detected, "ambiguous")
