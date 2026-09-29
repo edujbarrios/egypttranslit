@@ -15,13 +15,14 @@ def parse_version(value: str) -> tuple[int, int, int]:
     match = _VERSION_RE.fullmatch(value)
     if match is None:
         raise ValueError("version must use X.Y.Z numeric release syntax")
-    return tuple(int(part) for part in match.groups())  # type: ignore[return-value]
+    major, minor, patch = match.groups()
+    return int(major), int(minor), int(patch)
 
 
 def update_pyproject(text: str, version: str) -> str:
-    """Replace the project version exactly once."""
+    """Replace the project version exactly once while preserving line endings."""
     updated, count = re.subn(
-        r'(?m)^version\s*=\s*"[^"]+"\s*$',
+        r'(?m)^version[ \t]*=[ \t]*"[^"]+"[ \t]*$',
         f'version = "{version}"',
         text,
         count=1,
@@ -32,9 +33,9 @@ def update_pyproject(text: str, version: str) -> str:
 
 
 def update_citation(text: str, version: str) -> str:
-    """Replace the citation version exactly once."""
+    """Replace the citation version exactly once while preserving line endings."""
     updated, count = re.subn(
-        r'(?m)^version:\s*"[^"]+"\s*$',
+        r'(?m)^version:[ \t]*"[^"]+"[ \t]*$',
         f'version: "{version}"',
         text,
         count=1,
@@ -75,7 +76,7 @@ def prepare_release(root: Path, version: str, notes: str) -> None:
     changelog = changelog_path.read_text(encoding="utf-8")
 
     current_match = re.search(
-        r'(?m)^version\s*=\s*"([^"]+)"\s*$',
+        r'(?m)^version[ \t]*=[ \t]*"([^"]+)"[ \t]*$',
         pyproject,
     )
     if current_match is None:
