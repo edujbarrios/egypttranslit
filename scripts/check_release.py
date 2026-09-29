@@ -43,22 +43,32 @@ def _validate_release_workflow(workflow: str) -> None:
     if '      - "v*"' not in workflow:
         raise SystemExit("release workflow must be restricted to version tags")
     if "workflow_dispatch" in workflow:
-        raise SystemExit("PyPI release workflow must not allow manual untagged publishing")
+        raise SystemExit(
+            "PyPI release workflow must not allow manual untagged publishing"
+        )
     if "name: pypi" not in workflow:
         raise SystemExit("release workflow must use the protected pypi environment")
     if workflow.count("id-token: write") != 1:
-        raise SystemExit("OIDC write permission must appear exactly once in release workflow")
+        raise SystemExit(
+            "OIDC write permission must appear exactly once in release workflow"
+        )
     if "username:" in workflow or "password:" in workflow or "PYPI_TOKEN" in workflow:
-        raise SystemExit("release workflow must use Trusted Publishing without static tokens")
+        raise SystemExit(
+            "release workflow must use Trusted Publishing without static tokens"
+        )
     if "Require tag to match project version" not in workflow:
         raise SystemExit("release workflow must verify tag/version equality")
     if "if-no-files-found: error" not in workflow:
-        raise SystemExit("release artifact upload must fail when distributions are missing")
+        raise SystemExit(
+            "release artifact upload must fail when distributions are missing"
+        )
 
     action_refs = re.findall(r"^\s*uses:\s*[^@\s]+@([^\s#]+)", workflow, re.MULTILINE)
     if not action_refs:
         raise SystemExit("release workflow contains no pinned actions")
-    unpinned = [ref for ref in action_refs if re.fullmatch(r"[0-9a-f]{40}", ref) is None]
+    unpinned = [
+        ref for ref in action_refs if re.fullmatch(r"[0-9a-f]{40}", ref) is None
+    ]
     if unpinned:
         raise SystemExit(f"release workflow contains unpinned action refs: {unpinned}")
 
