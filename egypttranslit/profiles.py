@@ -24,7 +24,7 @@ def _load_profile_specs() -> dict[str, _ProfileSpec]:
     resource = files("egypttranslit").joinpath("data/profiles.json")
     payload = json.loads(resource.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
-        raise RuntimeError("invalid transliteration profile data")
+        raise TypeError("invalid transliteration profile data")
     return cast(dict[str, _ProfileSpec], payload)
 
 
