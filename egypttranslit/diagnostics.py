@@ -92,10 +92,8 @@ def _detect_input(text: str, warnings: tuple[str, ...]) -> tuple[DetectedInput, 
         for character in token[1:]
     )
 
-    if has_unicode and not has_ascii:
+    if has_unicode:
         return "unicode", 1.0
-    if has_unicode and has_ascii:
-        return "mixed", 0.9
     if has_strong_mdc:
         return "mdc", 0.9
     if has_ascii:
