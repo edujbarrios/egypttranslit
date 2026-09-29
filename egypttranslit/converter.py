@@ -186,7 +186,9 @@ def _canonicalize_mdc_token(
 ) -> str:
     if token == _UPPERCASE_XH or _is_sign_code(token) or _is_numeric_run(token):
         return token
-    canonical = token.translate(_UNICODE_CANONICAL_TRANSLATION).translate(_MDC_TRANSLATION)
+    canonical = token.translate(_UNICODE_CANONICAL_TRANSLATION).translate(
+        _MDC_TRANSLATION
+    )
     return apply_profile(canonical, profile)
 
 
