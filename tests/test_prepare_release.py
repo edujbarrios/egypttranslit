@@ -17,9 +17,8 @@ class PrepareReleaseTests(unittest.TestCase):
 
     def test_parse_version_rejects_non_final_or_ambiguous_versions(self):
         for value in ("1.2", "v1.2.3", "1.2.3rc1", "01.2.3"):
-            with self.subTest(value=value):
-                with self.assertRaisesRegex(ValueError, "X.Y.Z"):
-                    parse_version(value)
+            with self.subTest(value=value), self.assertRaisesRegex(ValueError, "X.Y.Z"):
+                parse_version(value)
 
     def test_text_updates_are_targeted(self):
         self.assertEqual(
