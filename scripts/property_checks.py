@@ -8,7 +8,8 @@ from __future__ import annotations
 import unicodedata
 import unittest
 
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from egypttranslit import normalize_unicode, parse, parse_mdc
 

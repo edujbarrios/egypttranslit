@@ -1,6 +1,6 @@
 import unittest
 
-from egypttranslit import ConversionResult, analyze, validate
+from egypttranslit.diagnostics import ConversionResult, analyze, validate
 
 
 class DiagnosticTests(unittest.TestCase):

@@ -3,6 +3,7 @@ import unittest
 from pathlib import Path
 
 from egypttranslit import normalize_unicode, parse, parse_mdc
+from egypttranslit.converter import parse_mdc_profiled
 
 _FIXTURE = Path(__file__).with_name("fixtures") / "reference_cases.json"
 
@@ -18,7 +19,7 @@ class ReferenceCaseTests(unittest.TestCase):
                 elif mode == "mdc":
                     actual = parse_mdc(case["source"])
                 elif mode == "mdc-legacy":
-                    actual = parse_mdc(
+                    actual = parse_mdc_profiled(
                         case["source"], profile="legacy-diacritics"
                     )
                 elif mode == "unicode":
