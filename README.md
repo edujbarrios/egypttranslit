@@ -21,6 +21,8 @@ python -m pip install egypttranslit
 | `parse(text)` | Conservative automatic detection | `default` | `parse("nTr mAat")` | `"nṯr mꜣꜥt"` |
 | `parse_mdc(text)` | Known MdC transliteration | `default` | `parse_mdc("nTr Htp xpr")` | `"nṯr ḥtp ḫpr"` |
 | `parse_mdc_profiled(text, profile="gardiner-1957")` | MdC with Gardiner-style `j/q` output | `gardiner-1957` | `parse_mdc_profiled("jr qd", profile="gardiner-1957")` | `"ꞽr ḳd"` |
+| `parse_mdc_many(texts)` | Batch of known MdC strings | `default` | `parse_mdc_many(["nTr", "Htp"])` | `("nṯr", "ḥtp")` |
+| `parse_mdc_profiled_many(texts, profile=...)` | Batch MdC with one profile | selected profile | `parse_mdc_profiled_many(["jr qd"], profile="gardiner-1957")` | `("ꞽr ḳd",)` |
 | `normalize_unicode(text)` | Already-Unicode scholarly text | none | `normalize_unicode("ȝ ʿ ỉ")` | canonical Unicode |
 | `analyze(text, mode=...)` | Detection + diagnostics | selected mode | `analyze("mAat", mode="mdc")` | structured result |
 | `validate(text)` | Reject dangerous mixed encodings | none | `validate("mAꜥt")` | raises `ValueError` |
@@ -60,6 +62,33 @@ Common mappings:
 | `3` | `ꜣ` | | |
 
 Gardiner/JSesh sign identifiers such as `A1`, `D36` and `T3` are preserved.
+
+### Batch conversion
+
+Use the batch helpers when each transliteration is a separate record. They preserve input order and return a tuple. Lists, tuples and generators are accepted.
+
+```python
+from egypttranslit.batch import parse_mdc_many, parse_mdc_profiled_many
+
+texts = ["nTr Htp", "xpr mAat", "jr qd"]
+
+assert parse_mdc_many(texts) == (
+    "nṯr ḥtp",
+    "ḫpr mꜣꜥt",
+    "jr qd",
+)
+
+assert parse_mdc_profiled_many(
+    texts,
+    profile="gardiner-1957",
+) == (
+    "nṯr ḥtp",
+    "ḫpr mꜣꜥt",
+    "ꞽr ḳd",
+)
+```
+
+`parse_many()` and `normalize_unicode_many()` provide the same batch behavior for conservative automatic parsing and Unicode normalization.
 
 ## Profiles
 
@@ -137,12 +166,6 @@ cat input.txt | egypttranslit --mode mdc --profile gardiner-1957 > output.txt
 ```
 
 Modes are `auto` (default), `mdc` and `unicode`. Non-default profiles are valid only with `--mode mdc`.
-
-## Scope
-
-The stable package-level API is `parse`, `parse_mdc`, `normalize_unicode` and `convert`. Advanced helpers live in `egypttranslit.converter`, `egypttranslit.profiles` and `egypttranslit.diagnostics`.
-
-The library converts transliteration encodings; it is not a renderer or full parser for the Manuel de Codage hieroglyph-layout language. Unknown characters, punctuation, whitespace, encoded hieroglyphs and protected sign identifiers are preserved.
 
 ## Citation
 

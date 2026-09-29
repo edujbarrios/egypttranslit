@@ -7,6 +7,7 @@ This file records user-visible changes. Citation metadata remains in `CITATION.c
 - Added the dependency-free `egypttranslit` command with `auto`, `mdc` and `unicode` modes, stdin support, explicit profile selection and deterministic UTF-8 I/O across Linux, macOS and Windows.
 - Added declarative transliteration profiles backed by package data, including the explicit `gardiner-1957` convention (`j → ꞽ`, `q → ḳ`) and the backward-compatible `legacy-diacritics` alias.
 - Added programmatic profile metadata through `ProfileInfo`, `get_profile_info()` and `list_profile_info()` while preserving the stable four-function package-level API.
+- Added advanced batch helpers for automatic parsing, explicit MdC conversion, profile-aware MdC conversion and Unicode normalization; batch inputs preserve order and may be lists, tuples or generators.
 - Added opt-in diagnostics and strict validation with deterministic input classification (`mdc`, `unicode`, `mixed`, `ambiguous`, `none`), heuristic confidence and mixed-encoding warnings.
 - Preserved multi-digit numeric runs in explicit MdC conversion while retaining `3` as the documented aleph alias in transliteration tokens.
 - Made historical Egyptological yod normalization robust to additional and canonically reordered combining marks without discarding unrelated editorial diacritics.
