@@ -27,6 +27,10 @@ class BatchConversionTests(unittest.TestCase):
             ("ꞽr ḳd", "nṯr mꜣꜥt"),
         )
 
+    def test_profiled_empty_batch_validates_profile(self):
+        with self.assertRaisesRegex(ValueError, "unknown transliteration profile"):
+            parse_mdc_profiled_many([], profile="unknown")  # type: ignore[arg-type]
+
     def test_batch_accepts_generators(self):
         source = (text for text in ["nTr", "Htp"])
         self.assertEqual(parse_mdc_many(source), ("nṯr", "ḥtp"))
