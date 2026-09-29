@@ -44,9 +44,7 @@ class PrepareReleaseTests(unittest.TestCase):
             (root / "pyproject.toml").write_text(
                 '[project]\nversion = "0.9.0"\n', encoding="utf-8"
             )
-            (root / "CITATION.cff").write_text(
-                'version: "0.9.0"\n', encoding="utf-8"
-            )
+            (root / "CITATION.cff").write_text('version: "0.9.0"\n', encoding="utf-8")
             (root / "CHANGELOG.md").write_text(
                 "# Changelog\n\n## 0.9.0\n\n- Old.\n", encoding="utf-8"
             )
@@ -72,9 +70,7 @@ class PrepareReleaseTests(unittest.TestCase):
             (root / "pyproject.toml").write_text(
                 '[project]\nversion = "0.9.0"\n', encoding="utf-8"
             )
-            (root / "CITATION.cff").write_text(
-                'version: "0.9.0"\n', encoding="utf-8"
-            )
+            (root / "CITATION.cff").write_text('version: "0.9.0"\n', encoding="utf-8")
             (root / "CHANGELOG.md").write_text(
                 "# Changelog\n\n## 0.9.0\n\n- Old.\n", encoding="utf-8"
             )
