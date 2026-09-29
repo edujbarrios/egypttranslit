@@ -1,3 +1,4 @@
+import io
 import subprocess
 import sys
 import unittest
@@ -19,6 +20,19 @@ class _BrokenPipeOutput:
 
     def close(self) -> None:
         self.closed = True
+
+
+class _OSErrorInput:
+    def read(self) -> str:
+        raise OSError("input unavailable")
+
+
+class _OSErrorOutput:
+    def write(self, text: str) -> int:
+        raise OSError("output unavailable")
+
+    def flush(self) -> None:
+        pass
 
 
 class CommandLineTests(unittest.TestCase):
@@ -68,6 +82,26 @@ class CommandLineTests(unittest.TestCase):
         stderr = result.stderr.decode("utf-8")
         self.assertIn("Unicode input/output error", stderr)
         self.assertNotIn("Traceback", stderr)
+
+    def test_os_error_reading_stdin_fails_cleanly(self):
+        stderr = io.StringIO()
+        with (
+            patch.object(sys, "stdin", _OSErrorInput()),
+            patch.object(sys, "stderr", stderr),
+        ):
+            returncode = cli.main(["--mode", "mdc"])
+        self.assertEqual(returncode, 2)
+        self.assertIn("I/O error: input unavailable", stderr.getvalue())
+
+    def test_os_error_writing_stdout_fails_cleanly(self):
+        stderr = io.StringIO()
+        with (
+            patch.object(sys, "stdout", _OSErrorOutput()),
+            patch.object(sys, "stderr", stderr),
+        ):
+            returncode = cli.main(["nTr"])
+        self.assertEqual(returncode, 2)
+        self.assertIn("I/O error: output unavailable", stderr.getvalue())
 
     def test_broken_pipe_is_a_clean_pipeline_termination(self):
         output = _BrokenPipeOutput()

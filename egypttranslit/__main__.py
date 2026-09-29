@@ -90,6 +90,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     except UnicodeError as error:
         _write_error(f"Unicode input/output error: {error}")
         return 2
+    except OSError as error:
+        _write_error(f"I/O error: {error}")
+        return 2
 
     return 0
 
