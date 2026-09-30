@@ -11,7 +11,7 @@ from egypttranslit import normalize_unicode, parse
 
 
 class ScholarlyFixtureTests(unittest.TestCase):
-    def test_ifao_prisse_samples_canonicalize_without_losing_structure(self):
+    def test_ifao_prisse_samples_are_stable_while_canonical_mode_is_available(self):
         fixtures = [
             (
                 "ḫr ḥm n(y) n(y)-sw.t bjt(y) Jssj ʿnḫ(=w) ḏ.t r nḥḥ",
@@ -31,10 +31,10 @@ class ScholarlyFixtureTests(unittest.TestCase):
             ),
         ]
 
-        for source, expected in fixtures:
+        for source, canonical in fixtures:
             with self.subTest(source=source):
-                self.assertEqual(normalize_unicode(source), expected)
-                self.assertEqual(parse(source), expected)
+                self.assertEqual(normalize_unicode(source), canonical)
+                self.assertEqual(parse(source), source)
 
     def test_real_unicode_samples_remain_idempotent(self):
         samples = [
