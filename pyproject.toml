@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "egypttranslit"
-version = "1.1.0"
+version = "1.1.1"
 description = "A small Python library for converting Egyptological transliteration to IFAO-style or canonical Unicode."
 authors = [{ name = "Eduardo J. Barrios", email = "edujbarrios@outlook.com" }]
 readme = "README.md"
