@@ -100,8 +100,8 @@ class DeterministicFuzzInvariantTests(unittest.TestCase):
 
     def test_large_mixed_document_preserves_structure(self):
         source_line = "A1 nTr D36 Htp ȝ ʿ ỉ \U00013000\U00013437\U00013001\n"
-        automatic_line = "A1 nṯr D36 Htp ꜣ ꜥ ꞽ \U00013000\U00013437\U00013001\n"
-        explicit_line = "A1 nṯr D36 ḥtp ꜣ ꜥ ꞽ \U00013000\U00013437\U00013001\n"
+        automatic_line = "A1 nṯr D36 Htp ȝ ʿ ỉ \U00013000\U00013437\U00013001\n"
+        explicit_line = "A1 nṯr D36 ḥtp ȝ ʿ ỉ \U00013000\U00013437\U00013001\n"
         source = source_line * 5_000
         normalized = source.replace("ȝ", "ꜣ").replace("ʿ", "ꜥ").replace("ỉ", "ꞽ")
 

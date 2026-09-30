@@ -12,13 +12,13 @@ class BatchConversionTests(unittest.TestCase):
     def test_parse_many_preserves_order(self):
         self.assertEqual(
             parse_many(["nTr mAat", "A taxi on the X axis."]),
-            ("nṯr mꜣꜥt", "A taxi on the X axis."),
+            ("nṯr mȝʿt", "A taxi on the X axis."),
         )
 
     def test_parse_mdc_many_converts_multiple_items(self):
         self.assertEqual(
             parse_mdc_many(("nTr Htp", "xpr mAat")),
-            ("nṯr ḥtp", "ḫpr mꜣꜥt"),
+            ("nṯr ḥtp", "ḫpr mȝʿt"),
         )
 
     def test_profiled_batch_uses_one_profile(self):

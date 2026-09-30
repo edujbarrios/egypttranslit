@@ -35,7 +35,7 @@ def _write_error(message: str) -> None:
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="egypttranslit",
-        description="Convert Egyptological transliteration to canonical Unicode.",
+        description="Convert Egyptological transliteration to clean scholarly Unicode.",
     )
     parser.add_argument(
         "text",
@@ -47,7 +47,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "--mode",
         choices=("auto", "mdc", "unicode"),
         default="auto",
-        help="conversion mode (default: auto)",
+        help="conversion mode (default: auto; IFAO-style plain-text output)",
     )
     parser.add_argument(
         "--profile",

@@ -42,8 +42,8 @@ class SignCodeTests(unittest.TestCase):
         self.assertEqual(parse_mdc(source), "A1-nṯr-D36-ḥtp-T3")
 
     def test_sign_code_protection_does_not_disable_aleph_three_shortcut(self):
-        self.assertEqual(parse("n3"), "nꜣ")
-        self.assertEqual(parse_mdc("n3"), "nꜣ")
+        self.assertEqual(parse("n3"), "nȝ")
+        self.assertEqual(parse_mdc("n3"), "nȝ")
 
     def test_sign_code_with_editorial_punctuation_keeps_layout(self):
         source = "[A1]:D36=T3; nTr"

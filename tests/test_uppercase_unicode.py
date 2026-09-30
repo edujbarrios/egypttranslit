@@ -4,14 +4,16 @@ from egypttranslit import normalize_unicode, parse, parse_mdc
 
 
 class UppercaseUnicodeTests(unittest.TestCase):
-    def test_historical_uppercase_forms_are_canonicalized_with_case_preserved(self):
+    def test_historical_uppercase_forms_have_canonical_and_ifao_outputs(self):
         self.assertEqual(normalize_unicode("Ȝ Ỉ"), "Ꜣ Ꞽ")
-        self.assertEqual(parse("Ȝ Ỉ"), "Ꜣ Ꞽ")
+        self.assertEqual(parse("Ȝ Ỉ"), "Ȝ Ỉ")
 
-    def test_canonical_uppercase_egyptological_unicode_is_preserved(self):
+    def test_canonical_uppercase_egyptological_unicode_uses_ifao_presentation(self):
         source = "Ꜣ Ꜥ Ꞽ Ḥ Ḫ Š Ṯ Ḏ Ḳ"
+        expected_ifao = "Ȝ ʿ Ỉ Ḥ Ḫ Š Ṯ Ḏ Ḳ"
         self.assertEqual(normalize_unicode(source), source)
-        self.assertEqual(parse(source), source)
+        self.assertEqual(parse(source), expected_ifao)
+        self.assertEqual(parse_mdc(source), expected_ifao)
 
     def test_uppercase_xh_sequence_is_never_mistaken_for_mdc_h(self):
         source = "H\u0331tp"

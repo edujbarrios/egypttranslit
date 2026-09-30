@@ -14,11 +14,19 @@ class ParserContractTests(unittest.TestCase):
                 source = "".join(characters)
                 automatic = parse(source)
                 explicit = parse_mdc(source)
+                canonical_automatic = normalize_unicode(automatic)
+                canonical_explicit = normalize_unicode(explicit)
 
                 self.assertEqual(parse(automatic), automatic, source)
                 self.assertEqual(parse_mdc(explicit), explicit, source)
-                self.assertEqual(normalize_unicode(automatic), automatic, source)
-                self.assertEqual(normalize_unicode(explicit), explicit, source)
+                self.assertEqual(
+                    normalize_unicode(canonical_automatic), canonical_automatic, source
+                )
+                self.assertEqual(
+                    normalize_unicode(canonical_explicit), canonical_explicit, source
+                )
+                self.assertEqual(parse(canonical_automatic), automatic, source)
+                self.assertEqual(parse_mdc(canonical_explicit), explicit, source)
                 self.assertEqual(parse_mdc(automatic), explicit, source)
                 self.assertTrue(unicodedata.is_normalized("NFC", automatic), source)
                 self.assertTrue(unicodedata.is_normalized("NFC", explicit), source)
@@ -91,11 +99,11 @@ class ParserContractTests(unittest.TestCase):
 
     def test_sign_code_grammar_does_not_overprotect_near_misses(self):
         cases = {
-            "A1000": "ꜣ1000",
+            "A1000": "ȝ1000",
             "D1000": "ḏ1000",
             "T1000": "ṯ1000",
-            "AA1abc": "ꜣꜣ1ꜥbc",
-            "US1AA1": "Uš1ꜣꜣ1",
+            "AA1abc": "ȝȝ1ʿbc",
+            "US1AA1": "Uš1ȝȝ1",
         }
         for source, explicit in cases.items():
             with self.subTest(source=source):

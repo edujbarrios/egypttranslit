@@ -1,4 +1,4 @@
-"""Conservative Egyptological transliteration to Unicode conversion."""
+"""Conservative Egyptological transliteration to scholarly Unicode conversion."""
 
 from __future__ import annotations
 
@@ -7,7 +7,10 @@ import unicodedata
 
 from .profiles import TransliterationProfile, apply_profile
 
-# Manuel de Codage ASCII shortcuts that have a clear Unicode equivalent.
+# Manuel de Codage ASCII shortcuts are first mapped to canonical Egyptological
+# Unicode. The selected output profile is applied afterwards, so the default
+# IFAO presentation can use plain-text ȝ/ʿ/ỉ while callers can still request
+# the canonical ꜣ/ꜥ/ꞽ forms explicitly.
 _MDC_TRANSLATION = str.maketrans(
     {
         "A": "ꜣ",
@@ -24,7 +27,8 @@ _MDC_TRANSLATION = str.maketrans(
 
 # Historical Unicode representations that can be canonicalized without
 # guessing an editorial convention. Case is preserved where Unicode provides
-# a case pair.
+# a case pair. Public parsing then applies its output profile; normalize_unicode
+# intentionally stops at these canonical forms.
 _UNICODE_CANONICAL_TRANSLATION = str.maketrans(
     {
         "ȝ": "ꜣ",
@@ -40,6 +44,12 @@ _UNICODE_CANONICAL_TRANSLATION = str.maketrans(
 # Work at the full combining-cluster level because canonical ordering may place
 # other scholarly/editorial marks between the base letter and the yod mark.
 _LEGACY_YOD_MARKS = frozenset(("\u0313", "\u0357", "\u0486"))
+
+# IFAO-style ỉ/Ỉ decompose to i/I plus COMBINING HOOK ABOVE. If such a cluster
+# also carries a legacy yod mark as an independent editorial mark, it must not
+# be reinterpreted on the next parse pass. Keeping that cluster intact makes
+# IFAO output idempotent even in unusual multi-diacritic scholarly text.
+_IFAO_YOD_MARK = "\u0309"
 
 # U+1E96 LATIN SMALL LETTER H WITH LINE BELOW has no single-code-point
 # uppercase mapping. Unicode uppercases it to H + COMBINING MACRON BELOW.
@@ -109,6 +119,15 @@ def _canonicalize_legacy_yod(text: str) -> str:
             end += 1
 
         marks = decomposed[index + 1 : end]
+        # U+1EC9/U+1EC8 (ỉ/Ỉ) decompose to i/I + U+0309. Once that mark is
+        # present, the cluster already represents IFAO yod and any additional
+        # legacy-yod-looking mark must be preserved as an editorial diacritic.
+        if _IFAO_YOD_MARK in marks:
+            result.append(base)
+            result.extend(marks)
+            index = end
+            continue
+
         yod_positions = [
             position for position, mark in enumerate(marks) if mark in _LEGACY_YOD_MARKS
         ]
@@ -133,11 +152,13 @@ def _prepare_text(text: str) -> str:
 
 
 def normalize_unicode(text: str) -> str:
-    """Normalize verified Egyptological Unicode variants without parsing MdC.
+    """Normalize verified Egyptological Unicode variants to canonical forms.
 
-    This is the safest operation for already-Unicode or mixed scholarly text:
-    it repairs only verified encoding equivalents and never interprets ASCII
-    letters such as ``A`` or ``a`` as Manuel de Codage shortcuts.
+    This is the safest operation for already-Unicode or mixed scholarly text
+    when canonical Unicode output is specifically desired. It repairs only
+    verified encoding equivalents and never interprets ASCII letters such as
+    ``A`` or ``a`` as Manuel de Codage shortcuts. In particular, IFAO-style
+    ``ȝ``, ``ʿ`` and ``ỉ`` normalize to ``ꜣ``, ``ꜥ`` and ``ꞽ`` respectively.
     """
     prepared = _prepare_text(text)
     return unicodedata.normalize(
@@ -193,14 +214,16 @@ def _canonicalize_mdc_token(
 
 
 def parse(text: str) -> str:
-    """Conservatively convert only self-signalling MdC tokens to Unicode.
+    """Conservatively convert self-signalling MdC tokens to default IFAO text.
 
     Automatic parsing never infers that neighbouring ASCII tokens are MdC.
     Ambiguous lowercase text, title-case words, one-letter shortcuts, tokens
     with multiple strong MdC markers, Gardiner/JSesh sign codes, and words
     containing only a plain ``x`` are preserved. Verified historical Unicode
-    forms are still canonicalized. Use :func:`parse_mdc` when the input format
-    is known and complete MdC transliteration conversion is desired.
+    forms are normalized internally and rendered with the default IFAO-style
+    plain-text forms ``ȝ``, ``ʿ`` and ``ỉ``. Use :func:`parse_mdc` when the
+    input format is known and complete MdC transliteration conversion is
+    desired, or :func:`normalize_unicode` for canonical ``ꜣ/ꜥ/ꞽ`` output.
     """
     prepared = _prepare_text(text)
 
@@ -208,7 +231,8 @@ def parse(text: str) -> str:
         token = match.group(0)
         if _has_explicit_mdc_signal(token):
             return _canonicalize_mdc_token(token)
-        return token.translate(_UNICODE_CANONICAL_TRANSLATION)
+        canonical = token.translate(_UNICODE_CANONICAL_TRANSLATION)
+        return apply_profile(canonical, "default")
 
     return unicodedata.normalize("NFC", _TOKEN_RE.sub(replace, prepared))
 
@@ -225,13 +249,15 @@ def _parse_mdc_with_profile(text: str, profile: TransliterationProfile) -> str:
 
 
 def parse_mdc(text: str) -> str:
-    """Convert known MdC shortcuts while preserving structure and API stability.
+    """Convert known MdC shortcuts to default IFAO-style plain Unicode text.
 
     This explicit mode assumes that the caller intentionally supplied MdC
     transliteration. Known shortcuts are converted even when unknown
     characters occur nearby. Multi-digit numbers, Gardiner/JSesh sign codes,
-    unknown characters, punctuation and layout are preserved. Editorial
-    alternatives such as ``j`` and ``q`` remain unchanged.
+    unknown characters, punctuation and layout are preserved. The default
+    output uses ``ȝ``, ``ʿ`` and ``ỉ`` instead of the visually raised
+    ``ꜣ``, ``ꜥ`` and ``ꞽ`` forms. Editorial alternatives such as plain ``j``
+    and ``q`` remain unchanged.
     """
     return _parse_mdc_with_profile(text, "default")
 
@@ -241,10 +267,10 @@ def parse_mdc_profiled(
 ) -> str:
     """Convert known MdC shortcuts using an explicit editorial output profile.
 
-    ``profile="legacy-diacritics"`` additionally renders ``j`` as
-    Egyptological yod ``ꞽ`` and ``q`` as ``ḳ``. This advanced API is separate
-    from :func:`parse_mdc` so the stable package-level converter contract stays
-    one string in, one string out.
+    ``profile="ifao"`` is the same IFAO-style plain-text convention used by
+    the default API. ``profile="unicode-canonical"`` reproduces the previous
+    1.0.x canonical ``ꜣ/ꜥ/ꞽ`` output. ``profile="gardiner-1957"`` additionally
+    renders ``j`` as Egyptological yod ``ꞽ`` and ``q`` as ``ḳ``.
     """
     return _parse_mdc_with_profile(text, profile)
 

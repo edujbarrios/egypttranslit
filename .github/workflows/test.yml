@@ -119,12 +119,14 @@ jobs:
           from egypttranslit.converter import parse_mdc_profiled
 
           assert __version__ == version("egypttranslit")
-          assert parse("nTr mAat") == "nṯr mꜣꜥt"
+          assert parse("nTr mAat") == "nṯr mȝʿt"
           assert parse("A taxi on the X axis.") == "A taxi on the X axis."
           assert parse("mATH") == "mATH"
-          assert parse_mdc("mATH") == "mꜣṯḥ"
+          assert parse_mdc("mATH") == "mȝṯḥ"
           assert parse_mdc("A1-nTr-D36-Htp-T3") == "A1-nṯr-D36-ḥtp-T3"
           assert parse_mdc("nTr Htp") == "nṯr ḥtp"
+          assert parse_mdc_profiled("mAat", profile="ifao") == "mȝʿt"
+          assert parse_mdc_profiled("mAat", profile="unicode-canonical") == "mꜣꜥt"
           assert parse_mdc_profiled("jr qd", profile="gardiner-1957") == "ꞽr ḳd"
           assert normalize_unicode("\u021D \u02BF") == "\uA723 \uA725"
           package_files = files("egypttranslit")
@@ -132,6 +134,7 @@ jobs:
           assert package_files.joinpath("data", "profiles.json").is_file()
           PY
           test "$(/tmp/egypttranslit-wheel/bin/egypttranslit --mode mdc 'nTr Htp')" = "nṯr ḥtp"
+          test "$(/tmp/egypttranslit-wheel/bin/egypttranslit --mode mdc --profile ifao 'mAat')" = "mȝʿt"
           test "$(/tmp/egypttranslit-wheel/bin/egypttranslit --mode mdc --profile gardiner-1957 'jr qd')" = "ꞽr ḳd"
           printf 'nTr Htp\n' | /tmp/egypttranslit-wheel/bin/egypttranslit --mode mdc > /tmp/wheel-cli.txt
           printf 'nṯr ḥtp\n' | cmp - /tmp/wheel-cli.txt
@@ -150,10 +153,12 @@ jobs:
           assert __version__ == version("egypttranslit")
           assert parse("mATH") == "mATH"
           assert parse_mdc("A1-nTr-D36-Htp-T3") == "A1-nṯr-D36-ḥtp-T3"
+          assert parse_mdc_profiled("mAat", profile="ifao") == "mȝʿt"
           assert parse_mdc_profiled("jr qd", profile="gardiner-1957") == "ꞽr ḳd"
           assert files("egypttranslit").joinpath("data", "profiles.json").is_file()
           PY
           test "$(/tmp/egypttranslit-sdist/bin/egypttranslit --mode mdc 'nTr Htp')" = "nṯr ḥtp"
+          test "$(/tmp/egypttranslit-sdist/bin/egypttranslit --mode mdc --profile ifao 'mAat')" = "mȝʿt"
           test "$(/tmp/egypttranslit-sdist/bin/egypttranslit --mode mdc --profile gardiner-1957 'jr qd')" = "ꞽr ḳd"
 
   python-next:

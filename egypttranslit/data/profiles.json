@@ -1,7 +1,24 @@
 {
   "default": {
-    "description": "Preserve editorial alternatives such as j and q.",
-    "mapping": {}
+    "alias": "ifao",
+    "description": "Default IFAO-style plain-text output using ȝ, ʿ and ỉ instead of raised-looking ꜣ, ꜥ and ꞽ forms."
+  },
+  "ifao": {
+    "description": "IFAO-style plain-text Egyptological transliteration using ȝ, ʿ and ỉ.",
+    "mapping": {
+      "Ꜣ": "Ȝ",
+      "ꜣ": "ȝ",
+      "Ꜥ": "ʿ",
+      "ꜥ": "ʿ",
+      "Ꞽ": "Ỉ",
+      "ꞽ": "ỉ"
+    },
+    "source": "Institut français d’archéologie orientale (IFAO), Polices de caractères and Unicode converters"
+  },
+  "unicode-canonical": {
+    "description": "Canonical Egyptological Unicode output used by egypttranslit 1.0.x, preserving j and q.",
+    "mapping": {},
+    "source": "Unicode canonical Egyptological transliteration characters"
   },
   "gardiner-1957": {
     "description": "Unicode/UAX #57 Gardiner 1957 transliteration output for ambiguous ASCII alternatives.",

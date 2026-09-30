@@ -1,4 +1,4 @@
-"""Egyptological transliteration to canonical Unicode."""
+"""Egyptological transliteration to clean scholarly Unicode."""
 
 from importlib.metadata import PackageNotFoundError as _PackageNotFoundError
 from importlib.metadata import version as _distribution_version

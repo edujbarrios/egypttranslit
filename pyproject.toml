@@ -4,15 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "egypttranslit"
-version = "1.0.1"
-description = "A small Python library for converting Egyptological transliteration to canonical Unicode."
+version = "1.1.0"
+description = "A small Python library for converting Egyptological transliteration to IFAO-style or canonical Unicode."
 authors = [{ name = "Eduardo J. Barrios", email = "edujbarrios@outlook.com" }]
 readme = "README.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
 dependencies = []
-keywords = ["egyptology", "transliteration", "unicode", "manuel-de-codage", "mdc"]
+keywords = ["egyptology", "transliteration", "unicode", "ifao", "manuel-de-codage", "mdc"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",

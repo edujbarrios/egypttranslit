@@ -9,6 +9,8 @@ from typing import Final, Literal, TypedDict, cast
 
 TransliterationProfile = Literal[
     "default",
+    "ifao",
+    "unicode-canonical",
     "gardiner-1957",
     "legacy-diacritics",
 ]
@@ -43,6 +45,8 @@ def _load_profile_specs() -> dict[str, _ProfileSpec]:
 _PROFILE_SPECS: Final = _load_profile_specs()
 TRANSLITERATION_PROFILES: Final[tuple[TransliterationProfile, ...]] = (
     "default",
+    "ifao",
+    "unicode-canonical",
     "gardiner-1957",
     "legacy-diacritics",
 )

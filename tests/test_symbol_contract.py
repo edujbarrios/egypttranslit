@@ -7,24 +7,25 @@ from egypttranslit import normalize_unicode, parse, parse_mdc
 class SymbolConversionContractTests(unittest.TestCase):
     def test_every_supported_mdc_shortcut_has_an_explicit_contract(self):
         cases = {
-            "A": "ꜣ",
-            "a": "ꜥ",
+            "A": "ȝ",
+            "a": "ʿ",
             "H": "ḥ",
             "x": "ḫ",
             "X": "ẖ",
             "S": "š",
             "T": "ṯ",
             "D": "ḏ",
-            "3": "ꜣ",
+            "3": "ȝ",
         }
         for source, expected in cases.items():
             with self.subTest(source=source):
                 self.assertEqual(parse_mdc(source), expected)
 
-    def test_modern_unicode_transliteration_is_already_a_fixed_point(self):
+    def test_canonical_unicode_has_explicit_ifao_and_canonical_contracts(self):
         source = "ꜣ ꜥ ꞽ ḥ ḫ ẖ š ṯ ḏ ḳ"
-        self.assertEqual(parse(source), source)
-        self.assertEqual(parse_mdc(source), source)
+        ifao = "ȝ ʿ ỉ ḥ ḫ ẖ š ṯ ḏ ḳ"
+        self.assertEqual(parse(source), ifao)
+        self.assertEqual(parse_mdc(source), ifao)
         self.assertEqual(normalize_unicode(source), source)
 
     def test_multidigit_numbers_are_never_treated_as_mdc_aleph(self):
@@ -60,7 +61,7 @@ class SymbolConversionContractTests(unittest.TestCase):
 
     def test_punctuation_and_layout_are_preserved_around_conversion(self):
         source = "[nTr]:mAat*Htp!"
-        self.assertEqual(parse_mdc(source), "[nṯr]:mꜣꜥt*ḥtp!")
+        self.assertEqual(parse_mdc(source), "[nṯr]:mȝʿt*ḥtp!")
 
 
 if __name__ == "__main__":

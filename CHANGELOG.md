@@ -2,6 +2,14 @@
 
 This file records user-visible changes. Citation metadata remains in `CITATION.cff`.
 
+## 1.1.0
+
+- Changed the default `parse()` and `parse_mdc()` presentation to IFAO-style plain-text transliteration, rendering aleph/ayin/yod as `ȝ`, `ʿ` and `ỉ` instead of the visually raised `ꜣ`, `ꜥ` and `ꞽ` forms.
+- Added an explicit `ifao` output profile; `default` is now an alias of this profile.
+- Added `unicode-canonical` for callers that need the previous 1.0.x `ꜣ/ꜥ/ꞽ` MdC output without changing plain `j` or `q`.
+- Kept `normalize_unicode()` intentionally canonical: IFAO-style `ȝ ʿ ỉ` still normalizes to `ꜣ ꜥ ꞽ` when canonical Unicode is explicitly requested.
+- Added regression coverage for IFAO plain-text samples and updated the CLI/documentation examples accordingly.
+
 ## 1.0.1
 
 - Fixed profiled batch conversion so unknown profiles are rejected even when the input iterable is empty.
