@@ -8,14 +8,15 @@ authors:
     email: "edujbarrios@outlook.com"
     orcid: "https://orcid.org/0009-0004-7805-6386"
     website: "https://edujbarrios.com"
-version: "1.0.1"
+version: "1.1.0"
 license: "Apache-2.0"
 repository-code: "https://github.com/edujbarrios/egypttranslit"
 url: "https://github.com/edujbarrios/egypttranslit"
-abstract: "A small Python library for converting Egyptological transliteration to clean, canonical Unicode."
+abstract: "A small Python library for converting Egyptological transliteration to clean IFAO-style or canonical Unicode."
 keywords:
   - egyptology
   - transliteration
   - unicode
+  - ifao
   - manuel de codage
   - digital humanities
