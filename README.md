@@ -38,6 +38,7 @@ print(normalize_unicode("ȝ ʿ ỉ"))
 | Canonical Unicode | `normalize_unicode("ȝ ʿ ỉ")` | `ꜣ ꜥ ꞽ` |
 | Output profiles | `parse_mdc_profiled("mAat", profile="unicode-canonical")` | `mꜣꜥt` |
 | Batch conversion | `parse_mdc_many(["nTr", "mAat"])` | `("nṯr", "mȝʿt")` |
+| Profiled batch conversion | `parse_mdc_profiled_many(["mAat"], profile="unicode-canonical")` | `("mꜣꜥt",)` |
 | Diagnostics | `analyze("mAat", mode="mdc")` | structured result |
 | Validation | `validate("mAꜥt")` | raises `ValueError` |
 | Command line | `egypttranslit --mode mdc "nTr Htp"` | `nṯr ḥtp` |
@@ -107,11 +108,36 @@ Available profiles:
 
 ## Batch conversion
 
+Use `parse_mdc_many()` for the default IFAO-style output:
+
 ```python
 from egypttranslit.batch import parse_mdc_many
 
 result = parse_mdc_many(["nTr", "Htp", "mAat"])
 assert result == ("nṯr", "ḥtp", "mȝʿt")
+```
+
+Use `parse_mdc_profiled_many()` when the whole batch should use a specific output profile:
+
+```python
+from egypttranslit.batch import parse_mdc_profiled_many
+
+texts = ["mAat", "jr qd"]
+
+assert parse_mdc_profiled_many(
+    texts,
+    profile="ifao",
+) == ("mȝʿt", "jr qd")
+
+assert parse_mdc_profiled_many(
+    texts,
+    profile="unicode-canonical",
+) == ("mꜣꜥt", "jr qd")
+
+assert parse_mdc_profiled_many(
+    texts,
+    profile="gardiner-1957",
+) == ("mꜣꜥt", "ꞽr ḳd")
 ```
 
 Batch helpers preserve order and accept lists, tuples and generators.
@@ -154,14 +180,15 @@ Modes: `auto`, `mdc`, `unicode`.
 ## Main API
 
 ```text
-parse(text)                         automatic, conservative conversion
-convert(text)                       alias for parse()
-parse_mdc(text)                     explicit MdC conversion
-normalize_unicode(text)             canonical Unicode normalization
-parse_mdc_profiled(text, profile)   explicit output profile
-parse_mdc_many(texts)               batch MdC conversion
-analyze(text, mode=...)              diagnostics
-validate(text)                       reject dangerous mixed encodings
+parse(text)                                  automatic, conservative conversion
+convert(text)                                alias for parse()
+parse_mdc(text)                              explicit MdC conversion
+normalize_unicode(text)                      canonical Unicode normalization
+parse_mdc_profiled(text, profile)            explicit output profile
+parse_mdc_many(texts)                        batch MdC conversion
+parse_mdc_profiled_many(texts, profile)      batch MdC conversion with an output profile
+analyze(text, mode=...)                      diagnostics
+validate(text)                               reject dangerous mixed encodings
 ```
 
 ## Citation
