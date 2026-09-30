@@ -45,6 +45,12 @@ _UNICODE_CANONICAL_TRANSLATION = str.maketrans(
 # other scholarly/editorial marks between the base letter and the yod mark.
 _LEGACY_YOD_MARKS = frozenset(("\u0313", "\u0357", "\u0486"))
 
+# IFAO-style ỉ/Ỉ decompose to i/I plus COMBINING HOOK ABOVE. If such a cluster
+# also carries a legacy yod mark as an independent editorial mark, it must not
+# be reinterpreted on the next parse pass. Keeping that cluster intact makes
+# IFAO output idempotent even in unusual multi-diacritic scholarly text.
+_IFAO_YOD_MARK = "\u0309"
+
 # U+1E96 LATIN SMALL LETTER H WITH LINE BELOW has no single-code-point
 # uppercase mapping. Unicode uppercases it to H + COMBINING MACRON BELOW.
 # Keep that sequence atomic so the ASCII H is never mistaken for the MdC H
@@ -113,6 +119,15 @@ def _canonicalize_legacy_yod(text: str) -> str:
             end += 1
 
         marks = decomposed[index + 1 : end]
+        # U+1EC9/U+1EC8 (ỉ/Ỉ) decompose to i/I + U+0309. Once that mark is
+        # present, the cluster already represents IFAO yod and any additional
+        # legacy-yod-looking mark must be preserved as an editorial diacritic.
+        if _IFAO_YOD_MARK in marks:
+            result.append(base)
+            result.extend(marks)
+            index = end
+            continue
+
         yod_positions = [
             position for position, mark in enumerate(marks) if mark in _LEGACY_YOD_MARKS
         ]
