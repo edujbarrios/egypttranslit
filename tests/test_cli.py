@@ -51,14 +51,14 @@ class CommandLineTests(unittest.TestCase):
     def test_auto_mode_from_arguments(self):
         result = self.run_cli("nTr", "mAat")
         self.assertEqual(result.returncode, 0)
-        self.assertEqual(result.stdout, "nṯr mꜣꜥt")
+        self.assertEqual(result.stdout, "nṯr mȝʿt")
         self.assertEqual(result.stderr, "")
 
     def test_explicit_mdc_mode_from_stdin_preserves_layout(self):
         source = "nTr Htp\n[mAat]"
         result = self.run_cli("--mode", "mdc", input_text=source)
         self.assertEqual(result.returncode, 0)
-        self.assertEqual(result.stdout, "nṯr ḥtp\n[mꜣꜥt]")
+        self.assertEqual(result.stdout, "nṯr ḥtp\n[mȝʿt]")
 
     def test_unicode_mode(self):
         result = self.run_cli("--mode", "unicode", "ȝ", "ʿ", "ỉ")
