@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - "v*"
-    branches:
-      - "release-trigger/v1.1.0"
   workflow_dispatch:
     inputs:
       version:
@@ -56,8 +54,6 @@ jobs:
           if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
             test "$GITHUB_REF" = "refs/heads/main"
             test "$REQUESTED_VERSION" = "$VERSION"
-          elif [ "$GITHUB_REF" = "refs/heads/release-trigger/v1.1.0" ]; then
-            test "$VERSION" = "1.1.0"
           else
             test "$GITHUB_REF_NAME" = "v${VERSION}"
           fi
@@ -85,7 +81,7 @@ jobs:
       id-token: write
     steps:
       - name: Download release distributions
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        uses: actions/download-artifact@634f93cb2916e75b540449e92b4886f43607fa02 # v5
         with:
           name: release-dists
           path: dist/
