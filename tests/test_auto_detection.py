@@ -7,8 +7,8 @@ class AutomaticDetectionTests(unittest.TestCase):
     def test_single_internal_marker_remains_auto_convertible(self):
         cases = {
             "nTr": "nṯr",
-            "mAat": "mꜣꜥt",
-            "n3": "nꜣ",
+            "mAat": "mȝʿt",
+            "n3": "nȝ",
         }
         for source, expected in cases.items():
             with self.subTest(source=source):
@@ -17,10 +17,10 @@ class AutomaticDetectionTests(unittest.TestCase):
 
     def test_multiple_strong_markers_are_preserved_by_auto_mode(self):
         cases = {
-            "mATH": "mꜣṯḥ",
+            "mATH": "mȝṯḥ",
             "nTrHtp": "nṯrḥtp",
-            "n33": "nꜣꜣ",
-            "AT": "ꜣṯ",
+            "n33": "nȝȝ",
+            "AT": "ȝṯ",
         }
         for source, explicit in cases.items():
             with self.subTest(source=source):
@@ -30,8 +30,8 @@ class AutomaticDetectionTests(unittest.TestCase):
     def test_leading_marker_alone_is_not_enough_for_auto_mode(self):
         cases = {
             "Htp": "ḥtp",
-            "Amun": "ꜣmun",
-            "3n": "ꜣn",
+            "Amun": "ȝmun",
+            "3n": "ȝn",
         }
         for source, explicit in cases.items():
             with self.subTest(source=source):
@@ -41,7 +41,7 @@ class AutomaticDetectionTests(unittest.TestCase):
     def test_leading_and_internal_markers_are_ambiguous_in_auto_mode(self):
         cases = {
             "HTp": "ḥṯp",
-            "AnTr": "ꜣnṯr",
+            "AnTr": "ȝnṯr",
             "SxD": "šḫḏ",
         }
         for source, explicit in cases.items():
