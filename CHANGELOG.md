@@ -2,6 +2,13 @@
 
 This file records user-visible changes. Citation metadata remains in `CITATION.cff`.
 
+## 1.1.1
+
+- Reworked the README to be shorter, easier to scan and focused on practical examples.
+- Added a compact feature table so the library's main capabilities can be checked at a glance.
+- Simplified examples for automatic parsing, explicit MdC conversion, IFAO output, profiles, batch conversion, diagnostics, validation and the CLI.
+- Reduced repeated background explanation while keeping citation, references and license information easy to find.
+
 ## 1.1.0
 
 - Changed the default `parse()` and `parse_mdc()` presentation to IFAO-style plain-text transliteration, rendering aleph/ayin/yod as `ȝ`, `ʿ` and `ỉ` instead of the visually raised `ꜣ`, `ꜥ` and `ꞽ` forms.
