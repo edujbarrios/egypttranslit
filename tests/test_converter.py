@@ -11,24 +11,24 @@ class ConverterTests(unittest.TestCase):
     def test_core_mdc_mapping_in_explicit_mode(self):
         self.assertEqual(
             parse_mdc("A a H x X S T D"),
-            "ꜣ ꜥ ḥ ḫ ẖ š ṯ ḏ",
+            "ȝ ʿ ḥ ḫ ẖ š ṯ ḏ",
         )
 
     def test_complete_mdc_example_in_explicit_mode(self):
         self.assertEqual(
             parse_mdc("nTr Htp xpr m mAat"),
-            "nṯr ḥtp ḫpr m mꜣꜥt",
+            "nṯr ḥtp ḫpr m mȝʿt",
         )
 
     def test_auto_parse_only_converts_self_signalling_tokens(self):
         self.assertEqual(
             parse("nTr Htp xpr m mAat"),
-            "nṯr Htp xpr m mꜣꜥt",
+            "nṯr Htp xpr m mȝʿt",
         )
 
     def test_ambiguous_lowercase_mdc_is_preserved_by_auto_parse(self):
         self.assertEqual(parse("ra"), "ra")
-        self.assertEqual(parse_mdc("ra"), "rꜥ")
+        self.assertEqual(parse_mdc("ra"), "rʿ")
 
     def test_plain_x_words_are_not_mistaken_for_mdc(self):
         for source in ("axis", "taxi", "tax", "wax", "xray"):
@@ -57,7 +57,7 @@ class ConverterTests(unittest.TestCase):
     def test_mixed_prose_only_converts_self_signalling_transliteration(self):
         self.assertEqual(
             parse("The word mAat is often discussed in Egyptology."),
-            "The word mꜣꜥt is often discussed in Egyptology.",
+            "The word mȝʿt is often discussed in Egyptology.",
         )
         self.assertEqual(
             parse("A taxi may contain Htp as plain text."),
@@ -71,53 +71,54 @@ class ConverterTests(unittest.TestCase):
     def test_editorial_punctuation_is_preserved_in_explicit_mode(self):
         self.assertEqual(
             parse_mdc("[mAat].nTr-Htp=sn <xpr>"),
-            "[mꜣꜥt].nṯr-ḥtp=sn <ḫpr>",
+            "[mȝʿt].nṯr-ḥtp=sn <ḫpr>",
         )
 
     def test_auto_parse_does_not_propagate_across_editorial_boundaries(self):
         self.assertEqual(
             parse("[mAat].nTr-Htp=sn <xpr>"),
-            "[mꜣꜥt].nṯr-Htp=sn <xpr>",
+            "[mȝʿt].nṯr-Htp=sn <xpr>",
         )
 
     def test_unbalanced_editorial_marks_do_not_break_explicit_parsing(self):
-        self.assertEqual(parse_mdc("[mAat nTr"), "[mꜣꜥt nṯr")
+        self.assertEqual(parse_mdc("[mAat nTr"), "[mȝʿt nṯr")
 
     def test_alternate_aleph_three_inside_mdc_token(self):
-        self.assertEqual(parse("n3"), "nꜣ")
+        self.assertEqual(parse("n3"), "nȝ")
 
     def test_bare_three_in_prose_is_preserved(self):
         self.assertEqual(parse("Chapter 3 contains data."), "Chapter 3 contains data.")
 
     def test_three_does_not_turn_neighbouring_plain_words_into_mdc(self):
-        self.assertEqual(parse("n3 data"), "nꜣ data")
+        self.assertEqual(parse("n3 data"), "nȝ data")
 
-    def test_ifao_style_unicode_aleph_and_ayin_are_canonicalized(self):
-        self.assertEqual(parse("ȝ ʿ"), "ꜣ ꜥ")
+    def test_ifao_style_unicode_aleph_and_ayin_are_preserved(self):
+        self.assertEqual(parse("ȝ ʿ"), "ȝ ʿ")
 
-    def test_ifao_yod_variant_is_canonicalized(self):
-        self.assertEqual(parse("ỉ"), "ꞽ")
+    def test_ifao_yod_variant_is_preserved(self):
+        self.assertEqual(parse("ỉ"), "ỉ")
 
-    def test_legacy_unicode_yod_sequences_are_canonicalized(self):
+    def test_legacy_unicode_yod_sequences_are_rendered_as_ifao_yod(self):
         for source in ("i\u0313", "i\u0357", "i\u0486"):
             with self.subTest(source=source):
-                self.assertEqual(parse(source), "ꞽ")
+                self.assertEqual(parse(source), "ỉ")
 
     def test_legacy_uppercase_yod_sequences_preserve_case(self):
         for source in ("I\u0313", "I\u0357", "I\u0486"):
             with self.subTest(source=source):
-                self.assertEqual(parse(source), "Ꞽ")
+                self.assertEqual(parse(source), "Ỉ")
 
     def test_decomposed_unicode_is_normalized(self):
         self.assertEqual(parse("h\u0323"), "ḥ")
 
-    def test_existing_unicode_is_preserved(self):
+    def test_canonical_unicode_is_rendered_in_default_ifao_style(self):
         source = "ꜣ ꜥ ꞽ ḥ ḫ ẖ š ṯ ḏ ḳ"
-        self.assertEqual(parse(source), source)
+        expected = "ȝ ʿ ỉ ḥ ḫ ẖ š ṯ ḏ ḳ"
+        self.assertEqual(parse(source), expected)
 
     def test_unicode_marker_does_not_force_ascii_mdc_conversion(self):
-        self.assertEqual(parse("ꜣdata"), "ꜣdata")
-        self.assertEqual(parse("ȝdata"), "ꜣdata")
+        self.assertEqual(parse("ꜣdata"), "ȝdata")
+        self.assertEqual(parse("ȝdata"), "ȝdata")
 
     def test_unknown_characters_are_preserved(self):
         source = "nfr 123!?\n𓂀"
@@ -125,12 +126,23 @@ class ConverterTests(unittest.TestCase):
 
     def test_auto_parse_never_infers_neighbouring_tokens(self):
         self.assertEqual(parse("ra 2026 nTr"), "ra 2026 nṯr")
-        self.assertEqual(parse_mdc("ra 2026 nTr"), "rꜥ 2026 nṯr")
+        self.assertEqual(parse_mdc("ra 2026 nTr"), "rʿ 2026 nṯr")
 
     def test_whitespace_and_multiline_text_are_preserved(self):
         source = "nTr\tHtp\n\n  mAat"
-        self.assertEqual(parse(source), "nṯr\tHtp\n\n  mꜣꜥt")
-        self.assertEqual(parse_mdc(source), "nṯr\tḥtp\n\n  mꜣꜥt")
+        self.assertEqual(parse(source), "nṯr\tHtp\n\n  mȝʿt")
+        self.assertEqual(parse_mdc(source), "nṯr\tḥtp\n\n  mȝʿt")
+
+    def test_ifao_plain_text_reference_sample_is_stable(self):
+        source = (
+            "ḏd-ḥr mȝʿ-ḫrw sȝ n ʿnḫ-ḥr sȝ ỉrỉ-pʿt ḥȝtỉ-ʿ wr ʿȝ n mšwš "
+            "ḥȝtỉ-ʿỉmỉ-rȝ ḥmw-nṯr n bȝ-nb-ḏw ḏd-ḥr mwt=f nbt pr šp-n-spdt mȝʿ-ḫr"
+        )
+        self.assertEqual(parse(source), source)
+        self.assertEqual(parse_mdc(source), source)
+
+    def test_normalize_unicode_still_returns_canonical_forms(self):
+        self.assertEqual(normalize_unicode("ȝ ʿ ỉ"), "ꜣ ꜥ ꞽ")
 
     def test_parse_is_idempotent(self):
         samples = [
