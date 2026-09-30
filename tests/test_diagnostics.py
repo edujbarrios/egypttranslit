@@ -7,7 +7,7 @@ class DiagnosticTests(unittest.TestCase):
     def test_analyze_reports_conversion(self):
         result = analyze("mAat", mode="mdc")
         self.assertIsInstance(result, ConversionResult)
-        self.assertEqual(result.text, "mꜣꜥt")
+        self.assertEqual(result.text, "mȝʿt")
         self.assertTrue(result.changed)
         self.assertEqual(result.detected, "mdc")
         self.assertEqual(result.confidence, 0.9)
@@ -37,7 +37,7 @@ class DiagnosticTests(unittest.TestCase):
 
     def test_analyze_reports_mixed_encoding_token(self):
         result = analyze("mAꜥt", mode="mdc")
-        self.assertEqual(result.text, "mꜣꜥt")
+        self.assertEqual(result.text, "mȝʿt")
         self.assertEqual(result.detected, "mixed")
         self.assertEqual(result.confidence, 1.0)
         self.assertEqual(len(result.warnings), 1)
