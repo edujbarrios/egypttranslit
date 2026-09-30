@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - "v*"
-    branches:
-      - "release-trigger/v1.1.1"
   workflow_dispatch:
     inputs:
       version:
@@ -56,8 +54,6 @@ jobs:
           if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
             test "$GITHUB_REF" = "refs/heads/main"
             test "$REQUESTED_VERSION" = "$VERSION"
-          elif [ "$GITHUB_REF" = "refs/heads/release-trigger/v1.1.1" ]; then
-            test "$VERSION" = "1.1.1"
           else
             test "$GITHUB_REF_NAME" = "v${VERSION}"
           fi
